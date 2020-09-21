@@ -1,6 +1,6 @@
-******************* 4. CLASSIFICATION FOR CREDIT SCORING*************;
+******************* CLASSIFICATION FOR CREDIT SCORING*************;
 
-******************* 4.1. LOGISTIC REGRESSION ******************;
+******************* 1. LOGISTIC REGRESSION ******************;
 
 proc logistic data=mydata.applicants;
    class checking savings/param=glm;
@@ -59,29 +59,8 @@ proc hpsplit data=train;
 run;
 
 
-****************** 4.2. Linear Programming Model *****************;
 
-/* data credit; */
-/*    input _id_ $ w1 w2 w3 e _type_ $ _rhs_; */
-/*    datalines; */
-/* object 0 0 0  1 min . */
-/* const1 24	2	0	-1 LE 100 */
-/* const2 35	6	1	-1 LE 100 */
-/* const3 40	4	1	-1 LE 100 */
-/* const4 30	10	0	1 GE 100 */
-/* const5 28	1	0	-1 LE 100 */
-/* const6 50	5	1	-1 LE 100 */
-/* const7 45	15	1	1 GE 100 */
-/* const8 60	10	0	1 GE 100 */
-/* const9 20	1	0	-1 LE 100 */
-/* const10 25	5	1	1 GE 100 */
-/* ; */
-/*  */
-/* proc lp data=credit; */
-/* run; */
-
-
-****************** 4.3. Cumulative Logistic Regression**********;
+****************** 2. Cumulative Logistic Regression**********;
 data bondrate;
    input
    OBS     RATING $    LOPMAR     LFIXCHAR     LGEARRAT     LTDCAP     LLEVER    LCASHRAT     LACIDRAT     LCURRAT LRECTURN LASSLTD;
@@ -211,21 +190,6 @@ run;
 proc means data=ratings n nmiss mean std min max;
 run;
 
-*******************************************************;
-data ratings_Moodys;
-	set work.ratings;
-	if rating=1 then rating='AAA';
-	if rating=2 then rating='AA';
-	if rating=3 then rating='A';
-	if rating=4 then rating='BAA';
-	if rating=5 then rating='BA';
-	if rating=6 then rating='B';
-	if rating=7 then rating='CAA';
-	if rating=8 then rating='CA';
-	if rating=9 then rating='C';
-	if rating=10 then rating='D';
-run;
-*******************************************************;
 
 proc corr data=ratings plots=matrix(histogram);
 run;
