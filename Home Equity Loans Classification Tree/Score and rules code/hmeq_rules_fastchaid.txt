@@ -1,0 +1,402 @@
+*------------------------------------------------------------*
+NODE = 17
+*------------------------------------------------------------*
+(LOAN < 6110)
+AND (DELINQ >= 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.5( 4/8)
+    PREDICTED 1 = 0.5( 4/8)
+*------------------------------------------------------------*
+NODE = 49
+*------------------------------------------------------------*
+MISSING(CLAGE) OR (CLAGE < 234.03608)
+AND (MORTDUE < 64226.4)
+AND MISSING(NINQ) OR (NINQ < 4.03)
+AND (DEROG >= 1.1)
+AND (DEROG >= 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0.2857( 4/14)
+    PREDICTED 1 = 0.7143( 10/14)
+*------------------------------------------------------------*
+NODE = 32
+*------------------------------------------------------------*
+(NINQ >= 2.08)
+AND MISSING(LOAN) OR (LOAN >= 6110)
+AND (DELINQ >= 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.6842( 13/19)
+    PREDICTED 1 = 0.3158( 6/19)
+*------------------------------------------------------------*
+NODE = 65
+*------------------------------------------------------------*
+(MORTDUE < 79999.84)
+AND (MORTDUE >= 64226.4)
+AND (DELINQ >= 1.1)
+AND MISSING(DEBTINC) OR (DEBTINC >= 22.34075)
+AND MISSING(NINQ) OR (NINQ < 2.08)
+AND MISSING(LOAN) OR (LOAN >= 6110)
+AND (DELINQ >= 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0( 0/7)
+    PREDICTED 1 = 1( 7/7)
+*------------------------------------------------------------*
+NODE = 22
+*------------------------------------------------------------*
+(NINQ >= 4.03)
+AND (DEROG >= 1.1)
+AND (DEROG >= 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0.1429( 1/7)
+    PREDICTED 1 = 0.8571( 6/7)
+*------------------------------------------------------------*
+NODE = 41
+*------------------------------------------------------------*
+MISSING(CLNO) OR (CLNO < 19.2)
+AND (LOAN >= 38744)
+AND MISSING(MORTDUE) OR (MORTDUE >= 60283.04)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.9167( 11/12)
+    PREDICTED 1 = 0.08333( 1/12)
+*------------------------------------------------------------*
+NODE = 55
+*------------------------------------------------------------*
+MISSING(DELINQ) OR (DELINQ < 1.1)
+AND MISSING(DEBTINC) OR (DEBTINC >= 22.34075)
+AND MISSING(NINQ) OR (NINQ < 2.08)
+AND MISSING(LOAN) OR (LOAN >= 6110)
+AND (DELINQ >= 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.958( 137/143)
+    PREDICTED 1 = 0.04196( 6/143)
+*------------------------------------------------------------*
+NODE = 33
+*------------------------------------------------------------*
+(DEBTINC < 36.675838)
+AND (JOB IS Office)
+AND MISSING(DEROG) OR (DEROG < 1.1)
+AND (DEROG >= 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0.1667( 1/6)
+    PREDICTED 1 = 0.8333( 5/6)
+*------------------------------------------------------------*
+NODE = 58
+*------------------------------------------------------------*
+(JOB IS ONE OF Mgr, ProfEx, Sales)
+AND (CLAGE < 140.61633)
+AND MISSING(DEROG) OR (DEROG < 2.1)
+AND MISSING(LOAN) OR (LOAN < 38744)
+AND MISSING(MORTDUE) OR (MORTDUE >= 60283.04)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0.4615( 6/13)
+    PREDICTED 1 = 0.5385( 7/13)
+*------------------------------------------------------------*
+NODE = 50
+*------------------------------------------------------------*
+(CLAGE >= 234.03608)
+AND (MORTDUE < 64226.4)
+AND MISSING(NINQ) OR (NINQ < 4.03)
+AND (DEROG >= 1.1)
+AND (DEROG >= 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.8571( 6/7)
+    PREDICTED 1 = 0.1429( 1/7)
+*------------------------------------------------------------*
+NODE = 36
+*------------------------------------------------------------*
+MISSING(MORTDUE) OR (MORTDUE >= 64226.4)
+AND MISSING(NINQ) OR (NINQ < 4.03)
+AND (DEROG >= 1.1)
+AND (DEROG >= 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.8485( 28/33)
+    PREDICTED 1 = 0.1515( 5/33)
+*------------------------------------------------------------*
+NODE = 47
+*------------------------------------------------------------*
+(DEBTINC < 22.34075)
+AND MISSING(NINQ) OR (NINQ < 2.08)
+AND MISSING(LOAN) OR (LOAN >= 6110)
+AND (DELINQ >= 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.7333( 11/15)
+    PREDICTED 1 = 0.2667( 4/15)
+*------------------------------------------------------------*
+NODE = 44
+*------------------------------------------------------------*
+MISSING(MORTDUE) OR (MORTDUE >= 36622.88)
+AND (LOAN < 9638)
+AND (CLAGE < 175.64874)
+AND MISSING(DELINQ) OR (DELINQ < 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.898( 88/98)
+    PREDICTED 1 = 0.102( 10/98)
+*------------------------------------------------------------*
+NODE = 63
+*------------------------------------------------------------*
+MISSING(YOJ) OR (YOJ < 14.35)
+AND (YOJ >= 9.02)
+AND (CLAGE >= 128.93886)
+AND (VALUE < 85039.78)
+AND MISSING(LOAN) OR (LOAN >= 9638)
+AND (CLAGE < 175.64874)
+AND MISSING(DELINQ) OR (DELINQ < 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0( 0/8)
+    PREDICTED 1 = 1( 8/8)
+*------------------------------------------------------------*
+NODE = 46
+*------------------------------------------------------------*
+MISSING(VALUE) OR (VALUE >= 85039.78)
+AND MISSING(LOAN) OR (LOAN >= 9638)
+AND (CLAGE < 175.64874)
+AND MISSING(DELINQ) OR (DELINQ < 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.9769( 422/432)
+    PREDICTED 1 = 0.02315( 10/432)
+*------------------------------------------------------------*
+NODE = 53
+*------------------------------------------------------------*
+MISSING(CLAGE) OR (CLAGE < 128.93886)
+AND (VALUE < 85039.78)
+AND MISSING(LOAN) OR (LOAN >= 9638)
+AND (CLAGE < 175.64874)
+AND MISSING(DELINQ) OR (DELINQ < 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.9516( 177/186)
+    PREDICTED 1 = 0.04839( 9/186)
+*------------------------------------------------------------*
+NODE = 66
+*------------------------------------------------------------*
+MISSING(MORTDUE) OR (MORTDUE >= 79999.84)
+AND (MORTDUE >= 64226.4)
+AND (DELINQ >= 1.1)
+AND MISSING(DEBTINC) OR (DEBTINC >= 22.34075)
+AND MISSING(NINQ) OR (NINQ < 2.08)
+AND MISSING(LOAN) OR (LOAN >= 6110)
+AND (DELINQ >= 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 1( 10/10)
+    PREDICTED 1 = 0( 0/10)
+*------------------------------------------------------------*
+NODE = 37
+*------------------------------------------------------------*
+MISSING(DELINQ) OR (DELINQ < 0.1)
+AND (LOAN < 19340)
+AND (MORTDUE < 60283.04)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.6( 12/20)
+    PREDICTED 1 = 0.4( 8/20)
+*------------------------------------------------------------*
+NODE = 24
+*------------------------------------------------------------*
+MISSING(LOAN) OR (LOAN >= 19340)
+AND (MORTDUE < 60283.04)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.9286( 26/28)
+    PREDICTED 1 = 0.07143( 2/28)
+*------------------------------------------------------------*
+NODE = 38
+*------------------------------------------------------------*
+(DELINQ >= 0.1)
+AND (LOAN < 19340)
+AND (MORTDUE < 60283.04)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0( 0/4)
+    PREDICTED 1 = 1( 4/4)
+*------------------------------------------------------------*
+NODE = 61
+*------------------------------------------------------------*
+MISSING(MORTDUE) OR (MORTDUE < 64226.4)
+AND (DELINQ >= 1.1)
+AND MISSING(DEBTINC) OR (DEBTINC >= 22.34075)
+AND MISSING(NINQ) OR (NINQ < 2.08)
+AND MISSING(LOAN) OR (LOAN >= 6110)
+AND (DELINQ >= 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.9444( 51/54)
+    PREDICTED 1 = 0.05556( 3/54)
+*------------------------------------------------------------*
+NODE = 64
+*------------------------------------------------------------*
+(YOJ >= 14.35)
+AND (YOJ >= 9.02)
+AND (CLAGE >= 128.93886)
+AND (VALUE < 85039.78)
+AND MISSING(LOAN) OR (LOAN >= 9638)
+AND (CLAGE < 175.64874)
+AND MISSING(DELINQ) OR (DELINQ < 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 1( 6/6)
+    PREDICTED 1 = 0( 0/6)
+*------------------------------------------------------------*
+NODE = 57
+*------------------------------------------------------------*
+MISSING(JOB) OR (JOB IS ONE OF Office, Other, Self)
+AND (CLAGE < 140.61633)
+AND MISSING(DEROG) OR (DEROG < 2.1)
+AND MISSING(LOAN) OR (LOAN < 38744)
+AND MISSING(MORTDUE) OR (MORTDUE >= 60283.04)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 1( 25/25)
+    PREDICTED 1 = 0( 0/25)
+*------------------------------------------------------------*
+NODE = 27
+*------------------------------------------------------------*
+MISSING(DEBTINC) OR (DEBTINC < 46.7104)
+AND (CLAGE >= 222.35861)
+AND (DEBTINC >= 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.8182( 9/11)
+    PREDICTED 1 = 0.1818( 2/11)
+*------------------------------------------------------------*
+NODE = 52
+*------------------------------------------------------------*
+MISSING(CLAGE) OR (CLAGE >= 140.61633)
+AND MISSING(DEROG) OR (DEROG < 2.1)
+AND MISSING(LOAN) OR (LOAN < 38744)
+AND MISSING(MORTDUE) OR (MORTDUE >= 60283.04)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.9844( 126/128)
+    PREDICTED 1 = 0.01563( 2/128)
+*------------------------------------------------------------*
+NODE = 40
+*------------------------------------------------------------*
+(DEROG >= 2.1)
+AND MISSING(LOAN) OR (LOAN < 38744)
+AND MISSING(MORTDUE) OR (MORTDUE >= 60283.04)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0( 0/1)
+    PREDICTED 1 = 1( 1/1)
+*------------------------------------------------------------*
+NODE = 19
+*------------------------------------------------------------*
+MISSING(JOB) OR (JOB IS ONE OF Mgr, Other, ProfEx, Sales, Self)
+AND MISSING(DEROG) OR (DEROG < 1.1)
+AND (DEROG >= 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.9245( 98/106)
+    PREDICTED 1 = 0.07547( 8/106)
+*------------------------------------------------------------*
+NODE = 43
+*------------------------------------------------------------*
+(MORTDUE < 36622.88)
+AND (LOAN < 9638)
+AND (CLAGE < 175.64874)
+AND MISSING(DELINQ) OR (DELINQ < 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0.2222( 2/9)
+    PREDICTED 1 = 0.7778( 7/9)
+*------------------------------------------------------------*
+NODE = 59
+*------------------------------------------------------------*
+MISSING(YOJ) OR (YOJ < 9.02)
+AND (CLAGE >= 128.93886)
+AND (VALUE < 85039.78)
+AND MISSING(LOAN) OR (LOAN >= 9638)
+AND (CLAGE < 175.64874)
+AND MISSING(DELINQ) OR (DELINQ < 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.9412( 48/51)
+    PREDICTED 1 = 0.05882( 3/51)
+*------------------------------------------------------------*
+NODE = 16
+*------------------------------------------------------------*
+MISSING(CLAGE) OR (CLAGE >= 175.64874)
+AND MISSING(DELINQ) OR (DELINQ < 0.1)
+AND MISSING(DEROG) OR (DEROG < 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.9821( 822/837)
+    PREDICTED 1 = 0.01792( 15/837)
+*------------------------------------------------------------*
+NODE = 13
+*------------------------------------------------------------*
+MISSING(CLAGE) OR (CLAGE < 222.35861)
+AND (DEBTINC >= 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0( 0/48)
+    PREDICTED 1 = 1( 48/48)
+*------------------------------------------------------------*
+NODE = 42
+*------------------------------------------------------------*
+(CLNO >= 19.2)
+AND (LOAN >= 38744)
+AND MISSING(MORTDUE) OR (MORTDUE >= 60283.04)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0( 0/5)
+    PREDICTED 1 = 1( 5/5)
+*------------------------------------------------------------*
+NODE = 34
+*------------------------------------------------------------*
+MISSING(DEBTINC) OR (DEBTINC >= 36.675838)
+AND (JOB IS Office)
+AND MISSING(DEROG) OR (DEROG < 1.1)
+AND (DEROG >= 0.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 40.976365)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.875( 7/8)
+    PREDICTED 1 = 0.125( 1/8)
+*------------------------------------------------------------*
+NODE = 28
+*------------------------------------------------------------*
+(DEBTINC >= 46.7104)
+AND (CLAGE >= 222.35861)
+AND (DEBTINC >= 43.843383)
+AND (DEBTINC >= 40.976365)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0( 0/5)
+    PREDICTED 1 = 1( 5/5)

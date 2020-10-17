@@ -1,0 +1,99 @@
+*------------------------------------------------------------*
+NODE = 13
+*------------------------------------------------------------*
+MISSING(CLNO) OR (CLNO < 30.08)
+AND (DEROG >= 1.1)
+AND MISSING(DELINQ) OR (DELINQ < 4.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.7368( 42/57)
+    PREDICTED 1 = 0.2632( 15/57)
+*------------------------------------------------------------*
+NODE = 18
+*------------------------------------------------------------*
+MISSING(MORTDUE) OR (MORTDUE >= 44509.6)
+AND (LOAN < 6110)
+AND (CLAGE < 175.64874)
+AND MISSING(DEROG) OR (DEROG < 1.1)
+AND MISSING(DELINQ) OR (DELINQ < 4.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.871( 27/31)
+    PREDICTED 1 = 0.129( 4/31)
+*------------------------------------------------------------*
+NODE = 17
+*------------------------------------------------------------*
+(MORTDUE < 44509.6)
+AND (LOAN < 6110)
+AND (CLAGE < 175.64874)
+AND MISSING(DEROG) OR (DEROG < 1.1)
+AND MISSING(DELINQ) OR (DELINQ < 4.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0.1( 1/10)
+    PREDICTED 1 = 0.9( 9/10)
+*------------------------------------------------------------*
+NODE = 9
+*------------------------------------------------------------*
+MISSING(DEBTINC) OR (DEBTINC < 46.7104)
+AND (CLAGE >= 222.35861)
+AND (DEBTINC >= 43.843383)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.8182( 9/11)
+    PREDICTED 1 = 0.1818( 2/11)
+*------------------------------------------------------------*
+NODE = 12
+*------------------------------------------------------------*
+MISSING(CLAGE) OR (CLAGE >= 175.64874)
+AND MISSING(DEROG) OR (DEROG < 1.1)
+AND MISSING(DELINQ) OR (DELINQ < 4.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.9681( 1123/1160)
+    PREDICTED 1 = 0.0319( 37/1160)
+*------------------------------------------------------------*
+NODE = 14
+*------------------------------------------------------------*
+(CLNO >= 30.08)
+AND (DEROG >= 1.1)
+AND MISSING(DELINQ) OR (DELINQ < 4.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0( 0/7)
+    PREDICTED 1 = 1( 7/7)
+*------------------------------------------------------------*
+NODE = 16
+*------------------------------------------------------------*
+MISSING(LOAN) OR (LOAN >= 6110)
+AND (CLAGE < 175.64874)
+AND MISSING(DEROG) OR (DEROG < 1.1)
+AND MISSING(DELINQ) OR (DELINQ < 4.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+    PREDICTED VALUE IS 0
+    PREDICTED 0 = 0.9268( 949/1024)
+    PREDICTED 1 = 0.07324( 75/1024)
+*------------------------------------------------------------*
+NODE = 5
+*------------------------------------------------------------*
+MISSING(CLAGE) OR (CLAGE < 222.35861)
+AND (DEBTINC >= 43.843383)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0( 0/48)
+    PREDICTED 1 = 1( 48/48)
+*------------------------------------------------------------*
+NODE = 4
+*------------------------------------------------------------*
+(DELINQ >= 4.1)
+AND MISSING(DEBTINC) OR (DEBTINC < 43.843383)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0( 0/11)
+    PREDICTED 1 = 1( 11/11)
+*------------------------------------------------------------*
+NODE = 10
+*------------------------------------------------------------*
+(DEBTINC >= 46.7104)
+AND (CLAGE >= 222.35861)
+AND (DEBTINC >= 43.843383)
+    PREDICTED VALUE IS 1
+    PREDICTED 0 = 0( 0/5)
+    PREDICTED 1 = 1( 5/5)
