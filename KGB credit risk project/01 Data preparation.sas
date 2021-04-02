@@ -99,21 +99,7 @@ run;
 
 *Missing value imputation;
 
-*We create a small dataset;
-data credit;
-	input income savings;
-	datalines;
-1300 400
-1000 .
-2000 800
-. 200
-1700 600
-2500 1000
-2200 900
-. 1000
-1500 .
-;
-run;
+
 
 proc standard data=credit replace out=creditnomissing;
 run;
@@ -121,73 +107,7 @@ run;
 *We use replace in proc standard to replace the missing values
 by the mean of the variable, And the result of the proc will
 be stored in a new data set call creditnomissing;
-
-*********************STANDARDIZING DATA************************;
-*SAS Database creation;
-data credit;
-	input income saving;
-	datalines;
-1300 400
-1000 700
-2000 800
-1800 200
-1700 600
-2500 1000
-2200 900
-1800 1000
-1500 700
-;
-run;
-
-proc standard data=credit mean=0 std=1 out=creditstand;
-run;
-
-proc means data=creditstand;
-run;
-
-*********************COARSE CLASSIFICATION************************;
-*SAS Database creation for this demo;
-
-data residence;
-	input default$ resstatus$ count;
-	datalines;
-good owner 6000
-good rentunf 1600
-good rentfurn 350
-good withpar 950
-good other 90
-good noanswer 10
-bad owner 300
-bad rentunf 400
-bad rentfurn 140
-bad withpar 100
-bad other 50
-bad noanswer 10
-;
-
-data coarse1;
-	input default$ resstatus$ count;
-	datalines;
-good owner 6000
-good renter 1950
-good other 1050
-bad owner 300
-bad renter 540
-bad other 160
-;
-
-data coarse2;
-	input default$ resstatus$ count;
-	datalines;
-good owner 6000
-good withpar 950
-good other 2050
-bad owner 300
-bad withpar 100
-bad other 600
-;
-
-proc freq data=coarse1;
+roc freq data=coarse1;
 	weight count;
 	tables default*resstatus / chisq;
 run;
