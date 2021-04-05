@@ -94,12 +94,3 @@ run;
 proc gplot data=applicants;
 	plot age * amount;
 run;
-
-
-
-*Missing value imputation;
-
-
-
-proc standard data=credit replace out=creditnomissing;
-run;
