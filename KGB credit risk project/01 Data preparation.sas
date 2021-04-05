@@ -103,30 +103,3 @@ run;
 
 proc standard data=credit replace out=creditnomissing;
 run;
-
-*We use replace in proc standard to replace the missing values
-by the mean of the variable, And the result of the proc will
-be stored in a new data set call creditnomissing;
-roc freq data=coarse1;
-	weight count;
-	tables default*resstatus / chisq;
-run;
-
-proc freq data=coarse2;
-	weight count;
-	tables default*resstatus / chisq;
-run;
-
-***********************************************************;
-proc freq data=residence;
-	weight count;
-	tables default * resstatus / chisq;
-run;
-
-proc freq data=coarse1;
-	table resstatus;
-run;
-
-proc freq data=coarse2;
-	table resstatus;
-run;
