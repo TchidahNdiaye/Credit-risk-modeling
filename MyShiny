@@ -1,0 +1,627 @@
+################################################################################
+# app.R - Application RShiny RWA + Retour4C (CSV/TXT) + DQ
+# Exigences ajoutées:
+# - Phase de préparation données
+# - Retour4C .csv ou .txt
+# - Aucune donnée obligatoire: preview 5 premières lignes avant synthèses
+# - Synthèses calculées uniquement sur demande (bouton)
+# - Aucun crash: tryCatch partout, jamais de stop()
+# - Anomalies Excel preview avant extraction
+# - Synthèses: Nbre d'observations (pas uniqueN contrats)
+################################################################################
+
+##############################
+# 0) Packages
+##############################
+required_pkgs <- c("shiny", "bslib", "data.table", "DT", "ggplot2", "readxl", "openxlsx", "shinyjs")
+
+missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, FUN.VALUE = logical(1), quietly = TRUE)]
+if (length(missing_pkgs) > 0) {
+  stop("Packages manquants: ", paste(missing_pkgs, collapse = ", "),
+       "\nInstalle-les avec: install.packages(c(", paste0('"', missing_pkgs, '"', collapse = ", "), "))")
+}
+
+library(shiny)
+library(bslib)
+library(data.table)
+library(DT)
+library(ggplot2)
+library(readxl)
+library(openxlsx)
+library(shinyjs)
+
+options(shiny.maxRequestSize = 10 * 1024^3)
+
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || (is.character(a) && !nzchar(a))) b else a
+
+##############################
+# 1) Fonctions RWA (Standard + IRBA) - identiques (stables)
+##############################
+std_rwa <- function(ead, rw) as.numeric(ead) * as.numeric(rw)
+
+std_rwa_with_collateral <- function(ead, rw, surete = 0, haircut = 0) {
+  ead <- as.numeric(ead); rw <- as.numeric(rw)
+  surete <- as.integer(surete); haircut <- as.numeric(haircut)
+  haircut <- pmax(0, pmin(haircut, 1))
+  ead_adj <- ifelse(surete == 1, ead * (1 - haircut), ead)
+  std_rwa(ead_adj, rw)
+}
+
+std_rwa_bilan_hb <- function(ead_b, ead_hb, ccf, rw) {
+  ead_b  <- as.numeric(ead_b)
+  ead_hb <- as.numeric(ead_hb)
+  ccf    <- as.numeric(ccf)
+  rw     <- as.numeric(rw)
+  rwa_b  <- std_rwa(ead_b, rw)
+  rwa_hb <- std_rwa(ead_hb * ccf, rw)
+  list(rwa_b = rwa_b, rwa_hb = rwa_hb, rwa_total = rwa_b + rwa_hb)
+}
+
+N <- function(x) stats::pnorm(x)
+G <- function(p) stats::qnorm(p)
+
+irb_corr_R <- function(pd, portfolio = c("corporate", "retail_mortgage", "retail_revolving", "retail_other")) {
+  portfolio <- match.arg(portfolio)
+  pd <- as.numeric(pd)
+  if (portfolio == "corporate") {
+    R <- 0.12 * (1 - exp(-50 * pd)) / (1 - exp(-50)) +
+      0.24 * (1 - (1 - exp(-50 * pd)) / (1 - exp(-50)))
+  } else if (portfolio == "retail_mortgage") {
+    R <- 0.15
+  } else if (portfolio == "retail_revolving") {
+    R <- 0.04
+  } else {
+    R <- 0.03 * (1 - exp(-35 * pd)) / (1 - exp(-35)) +
+      0.16 * (1 - (1 - exp(-35 * pd)) / (1 - exp(-35)))
+  }
+  pmax(0, pmin(R, 0.999))
+}
+
+irb_maturity_b <- function(pd) (0.11852 - 0.05478 * log(pmax(as.numeric(pd), 1e-10)))^2
+
+irb_k <- function(pd, lgd, R) {
+  pd  <- pmax(1e-10, pmin(as.numeric(pd), 1 - 1e-10))
+  lgd <- pmax(0, pmin(as.numeric(lgd), 1))
+  R   <- pmax(0, pmin(as.numeric(R), 0.999))
+  d <- (1 / sqrt(1 - R)) * G(pd) + sqrt(R / (1 - R)) * G(0.999)
+  lgd * N(d) - pd * lgd
+}
+
+irb_rwa <- function(pd, lgd, ead, M = 2.5, portfolio = "corporate",
+                    apply_maturity = TRUE, scaling = 1.06) {
+  pd  <- as.numeric(pd); lgd <- as.numeric(lgd)
+  ead <- as.numeric(ead); M <- as.numeric(M); scaling <- as.numeric(scaling)
+  R <- irb_corr_R(pd, portfolio = portfolio)
+  K <- irb_k(pd, lgd, R)
+  if (apply_maturity) {
+    b <- irb_maturity_b(pd)
+    K_adj <- K * (1 + (M - 2.5) * b) / (1 - 1.5 * b)
+  } else {
+    K_adj <- K
+  }
+  12.5 * K_adj * ead * scaling
+}
+
+##############################
+# 2) Préparation données Retour4C (nouveau)
+##############################
+
+# conversion robuste "français/anglais" vers numérique
+to_num_safe <- function(x) {
+  if (is.numeric(x)) return(x)
+  x <- as.character(x)
+  x <- gsub("\u00A0", "", x)        # NBSP
+  x <- gsub(" ", "", x)            # espaces
+  x <- gsub(",", ".", x)           # virgule -> point (si décimal)
+  suppressWarnings(as.numeric(x))
+}
+
+asof_to_date <- function(x) {
+  if (inherits(x, "Date")) return(x)
+  x <- as.character(x)
+  out <- suppressWarnings(as.Date(x, format = "%Y-%m-%d"))
+  if (all(is.na(out))) out <- suppressWarnings(as.Date(x, format = "%d/%m/%Y"))
+  if (all(is.na(out))) out <- suppressWarnings(as.Date(x, format = "%Y%m%d"))
+  out
+}
+
+# normalisation des colonnes: trim + homogénéisation minimale
+normalize_names <- function(nm) {
+  nm <- trimws(nm)
+  nm <- gsub("\\s+", "_", nm)
+  nm
+}
+
+# Préparation: garantit que l'app ne plante jamais même si colonnes manquantes
+prep_retour4c <- function(dt) {
+  if (is.null(dt) || !is.data.table(dt)) return(dt)
+
+  # normaliser les noms
+  setnames(dt, normalize_names(names(dt)))
+
+  # créer colonnes attendues si absentes (sans erreur)
+  expected <- c(
+    "ASOF_DT", "GoldenSource", "SG_CONTRACT_ID",
+    "Encours", "EAD", "RWA",
+    "PRTF", "SSPRTF", "Segment", "PRODUCT_ID",
+    "SG_CONTR_BCE", "SG_CONTR_3D_ID", "SG_FACILITY_ID", "SG_ID_ENREGISTRMNT"
+  )
+  missing <- setdiff(expected, names(dt))
+  if (length(missing) > 0) {
+    for (m in missing) dt[, (m) := NA]
+  }
+
+  # types robustes
+  dt[, ASOF := asof_to_date(ASOF_DT)]
+  dt[, Encours := to_num_safe(Encours)]
+  dt[, EAD     := to_num_safe(EAD)]
+  dt[, RWA     := to_num_safe(RWA)]
+
+  # nettoyage PRTF/SSPRTF
+  dt[, PRTF   := as.character(PRTF)]
+  dt[, SSPRTF := as.character(SSPRTF)]
+  dt[, GoldenSource := as.character(GoldenSource)]
+
+  dt
+}
+
+##############################
+# 3) Lecture Retour4C (Preview puis Full)
+##############################
+safe_fread <- function(path, nrows = NULL, sep = "auto", dec = ".", select_cols = NULL) {
+  # Aucun crash: renvoie list(ok=TRUE/FALSE, dt, msg)
+  res <- tryCatch({
+    dt <- fread(
+      file = path,
+      sep = sep,
+      dec = dec,
+      nrows = nrows,
+      select = select_cols,
+      showProgress = FALSE
+    )
+    list(ok = TRUE, dt = dt, msg = "OK")
+  }, error = function(e) {
+    list(ok = FALSE, dt = data.table(), msg = e$message)
+  })
+  res
+}
+
+##############################
+# 4) Synthèses (Nbre d'observations demandé)
+##############################
+synth_golden_source <- function(dt) {
+  x <- copy(dt)
+  x[, .(
+    Nbre_observations = .N,
+    Encours_MEUR = sum(Encours, na.rm = TRUE) / 1e6,
+    EAD_MEUR     = sum(EAD, na.rm = TRUE) / 1e6,
+    RWA_MEUR     = sum(RWA, na.rm = TRUE) / 1e6
+  ), by = .(ASOF, GoldenSource)][order(ASOF, GoldenSource)]
+}
+
+synth_portefeuille <- function(dt) {
+  x <- copy(dt)
+  x[, .(
+    Nbre_observations = .N,
+    Encours_MEUR = sum(Encours, na.rm = TRUE) / 1e6,
+    EAD_MEUR     = sum(EAD, na.rm = TRUE) / 1e6,
+    RWA_MEUR     = sum(RWA, na.rm = TRUE) / 1e6
+  ), by = .(ASOF, PRTF)][order(ASOF, PRTF)]
+}
+
+##############################
+# 5) Extraction anomalies DQ
+##############################
+find_contract_rows <- function(ret_dt, ids_dt,
+                               id_col = "ID_CONTRAT",
+                               search_cols = c("SG_CONTRACT_ID","SG_CONTR_BCE","SG_CONTR_3D_ID","SG_FACILITY_ID","SG_ID_ENREGISTRMNT")) {
+  if (is.null(ret_dt) || !is.data.table(ret_dt)) return(data.table())
+  if (is.null(ids_dt) || !is.data.table(ids_dt)) return(data.table())
+  if (!id_col %in% names(ids_dt)) return(data.table())
+
+  ids <- unique(as.character(ids_dt[[id_col]]))
+  ids <- ids[!is.na(ids) & ids != ""]
+  if (length(ids) == 0) return(data.table())
+
+  keep_cols <- unique(c("ASOF_DT","ASOF","PRTF","SSPRTF","Segment","PRODUCT_ID","Encours","EAD","RWA", search_cols))
+  keep_cols <- intersect(keep_cols, names(ret_dt))
+  tmp <- ret_dt[, ..keep_cols]
+
+  # melt sur colonnes identifiants
+  mcols <- intersect(search_cols, names(tmp))
+  if (length(mcols) == 0) return(data.table())
+
+  long <- melt(tmp, measure.vars = mcols, variable.name = "ID_TYPE", value.name = "ID_VALUE", variable.factor = FALSE)
+  long[, ID_VALUE := as.character(ID_VALUE)]
+  long <- long[ID_VALUE %chin% ids]
+  if (nrow(long) == 0) return(data.table())
+
+  long[, ID_CONTRAT := ID_VALUE]
+
+  out_cols <- c("ID_CONTRAT","ID_TYPE","ASOF_DT","ASOF","PRTF","SSPRTF","Segment","PRODUCT_ID","Encours","EAD","RWA")
+  out_cols <- intersect(out_cols, names(long))
+  long[, ..out_cols]
+}
+
+write_xlsx_safe <- function(dt, path) {
+  # jamais d'erreur non gérée
+  tryCatch({
+    wb <- createWorkbook()
+    addWorksheet(wb, "data")
+    writeDataTable(wb, "data", as.data.frame(dt))
+    saveWorkbook(wb, path, overwrite = TRUE)
+    TRUE
+  }, error = function(e) FALSE)
+}
+
+################################################################################
+# MODULE 1 (calculateur) - inchangé (non demandé ici)
+################################################################################
+mod_calc_ui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    h3("1) Calcul RWA - Standard & IRBA"),
+    p("Module calculateur (identique à ta version précédente).")
+  )
+}
+mod_calc_server <- function(id) {
+  moduleServer(id, function(input, output, session) {})
+}
+
+################################################################################
+# MODULE 2 - Retour4C: Preview obligatoire + Full load + préparation + synthèses à la demande
+################################################################################
+mod_retour4c_ui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    h3("2) Retour4C (CSV / TXT) - Preview puis synthèses"),
+    fluidRow(
+      column(
+        4,
+        card(
+          card_header("Charger Retour4C"),
+          fileInput(ns("file_ret"), "Retour4C (.csv / .txt)", accept = c(".csv",".txt")),
+          selectInput(ns("sep"), "Séparateur colonnes", choices = c("Auto"="auto", ","=",", ";"=";", "Tab"="\t", "|"="|"), selected = "auto"),
+          selectInput(ns("dec"), "Séparateur décimal", choices = c("."=".", ","=","), selected = "."),
+          checkboxInput(ns("min_cols"), "Charger seulement colonnes utiles (recommandé)", TRUE),
+          hr(),
+          actionButton(ns("btn_full"), "Charger complet + Préparer données", class = "btn-primary"),
+          actionButton(ns("btn_synth"), "Calculer synthèses", class = "btn-success"),
+          hr(),
+          uiOutput(ns("status"))
+        )
+      ),
+      column(
+        8,
+        card(
+          card_header("Preview (obligatoire avant synthèses)"),
+          DTOutput(ns("preview_tbl")),
+          hr(),
+          uiOutput(ns("asof_info")),
+          hr(),
+          h4("Synthèse par Golden source"),
+          DTOutput(ns("tbl_gs")),
+          hr(),
+          h4("Synthèse par portefeuille Bâlois"),
+          DTOutput(ns("tbl_prtf"))
+        )
+      )
+    )
+  )
+}
+
+mod_retour4c_server <- function(id) {
+  moduleServer(id, function(input, output, session) {
+
+    ret_preview <- reactiveVal(data.table())
+    ret_full    <- reactiveVal(NULL)
+
+    synth_gs_r  <- reactiveVal(NULL)
+    synth_prtf_r<- reactiveVal(NULL)
+
+    status_txt  <- reactiveVal("Aucun fichier chargé.")
+
+    output$status <- renderUI(tags$div(tags$strong(status_txt())))
+
+    # --- Preview automatique dès sélection du fichier (5 premières lignes)
+    observeEvent(input$file_ret, {
+      synth_gs_r(NULL); synth_prtf_r(NULL)
+      ret_full(NULL)
+
+      if (is.null(input$file_ret)) {
+        ret_preview(data.table())
+        status_txt("Aucun fichier chargé.")
+        return()
+      }
+
+      status_txt("Prévisualisation en cours (5 lignes)...")
+
+      path <- input$file_ret$datapath
+      sep  <- input$sep %||% "auto"
+      dec  <- input$dec %||% "."
+
+      # lire un petit échantillon sans crash
+      r <- safe_fread(path, nrows = 50, sep = sep, dec = dec, select_cols = NULL)
+
+      if (!isTRUE(r$ok)) {
+        # Pas de crash: on affiche message et table vide
+        ret_preview(data.table(Message = paste("Impossible de lire la preview:", r$msg)))
+        status_txt("Preview non disponible (format/encodage à vérifier), l’application reste stable.")
+        return()
+      }
+
+      dtp <- as.data.table(r$dt)
+      setDT(dtp)
+      ret_preview(head(dtp, 5))
+      status_txt("Preview affichée (5 lignes). Tu peux maintenant charger complet.")
+    })
+
+    output$preview_tbl <- renderDT({
+      datatable(ret_preview(), options = list(pageLength = 5, dom = "t", scrollX = TRUE), rownames = FALSE)
+    })
+
+    # --- Chargement complet + préparation
+    observeEvent(input$btn_full, {
+      req(input$file_ret)
+
+      status_txt("Chargement complet en cours... (peut être long sur 3Go)")
+      synth_gs_r(NULL); synth_prtf_r(NULL)
+
+      path <- input$file_ret$datapath
+      sep  <- input$sep %||% "auto"
+      dec  <- input$dec %||% "."
+
+      # sélection colonnes si demandé (mais pas obligatoire)
+      select_cols <- NULL
+      if (isTRUE(input$min_cols)) {
+        select_cols <- c("ASOF_DT","GoldenSource","SG_CONTRACT_ID","Encours","EAD","RWA","PRTF","SSPRTF",
+                         "Segment","PRODUCT_ID","SG_CONTR_BCE","SG_CONTR_3D_ID","SG_FACILITY_ID","SG_ID_ENREGISTRMNT")
+      }
+
+      withProgress(message = "Chargement complet + Préparation...", value = 0, {
+        incProgress(0.1)
+
+        r <- safe_fread(path, nrows = NULL, sep = sep, dec = dec, select_cols = select_cols)
+        incProgress(0.6)
+
+        if (!isTRUE(r$ok)) {
+          # Jamais de crash
+          ret_full(NULL)
+          status_txt(paste("Chargement complet impossible:", r$msg))
+          showNotification("Chargement complet impossible (format/encodage). L’app ne plante pas.", type = "error", duration = 8)
+          return()
+        }
+
+        dt <- as.data.table(r$dt)
+        setDT(dt)
+
+        # préparation
+        dt <- prep_retour4c(dt)
+        incProgress(0.9)
+
+        ret_full(dt)
+        status_txt("Fichier chargé complet + données préparées. Tu peux lancer les synthèses.")
+        showNotification("Retour4C chargé + préparé.", type = "message", duration = 5)
+      })
+    })
+
+    output$asof_info <- renderUI({
+      dt <- ret_full()
+      if (is.null(dt)) return(tags$span(class="text-muted", "Retour4C complet non chargé."))
+      max_asof <- suppressWarnings(max(dt$ASOF, na.rm = TRUE))
+      tags$div(
+        tags$p(tags$strong("Arrêté (max ASOF): "), ifelse(is.finite(as.numeric(max_asof)), format(max_asof, "%d/%m/%Y"), "NA")),
+        tags$p(tags$strong("Dimensions: "), paste(nrow(dt), "lignes x", ncol(dt), "colonnes"))
+      )
+    })
+
+    # --- Synthèses uniquement sur demande (et jamais d’erreur non gérée)
+    observeEvent(input$btn_synth, {
+      dt <- ret_full()
+      if (is.null(dt)) {
+        showNotification("Charge d’abord le fichier complet (bouton Charger complet).", type = "warning", duration = 6)
+        return()
+      }
+
+      status_txt("Calcul des synthèses en cours...")
+
+      withProgress(message = "Synthèses...", value = 0, {
+        incProgress(0.3)
+
+        gs <- tryCatch(synth_golden_source(dt), error = function(e) data.table(Message = paste("Synthèse GS impossible:", e$message)))
+        incProgress(0.6)
+        pr <- tryCatch(synth_portefeuille(dt),  error = function(e) data.table(Message = paste("Synthèse PRTF impossible:", e$message)))
+        incProgress(0.9)
+
+        synth_gs_r(gs)
+        synth_prtf_r(pr)
+
+        status_txt("Synthèses calculées.")
+        showNotification("Synthèses terminées.", type = "message", duration = 4)
+      })
+    })
+
+    output$tbl_gs <- renderDT({
+      x <- synth_gs_r()
+      if (is.null(x)) return(datatable(data.table(Info="Synthèse non calculée (clique 'Calculer synthèses')."), rownames = FALSE))
+      datatable(x, options = list(pageLength = 25, scrollX = TRUE), rownames = FALSE)
+    })
+
+    output$tbl_prtf <- renderDT({
+      x <- synth_prtf_r()
+      if (is.null(x)) return(datatable(data.table(Info="Synthèse non calculée (clique 'Calculer synthèses')."), rownames = FALSE))
+      datatable(x, options = list(pageLength = 25, scrollX = TRUE), rownames = FALSE)
+    })
+
+    # Expose le dataset complet aux autres modules
+    return(list(ret_full = ret_full))
+  })
+}
+
+################################################################################
+# MODULE 3 - Anomalies Excel: Preview immédiate + extraction ensuite
+################################################################################
+mod_anom_ui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    h3("3) Anomalies DQ - Preview puis extraction depuis Retour4C"),
+    fluidRow(
+      column(
+        4,
+        card(
+          card_header("Charger anomalies_dq.xlsx"),
+          fileInput(ns("anom_file"), "anomalies_dq.xlsx", accept = c(".xlsx")),
+          hr(),
+          actionButton(ns("btn_extract"), "Extraire depuis Retour4C", class = "btn-primary"),
+          hr(),
+          downloadButton(ns("dl_extract"), "Télécharger ead_rwa_ano_dq.xlsx"),
+          hr(),
+          uiOutput(ns("status"))
+        )
+      ),
+      column(
+        8,
+        card(
+          card_header("Preview anomalies (5 premières lignes)"),
+          DTOutput(ns("anom_preview")),
+          hr(),
+          card_header("Aperçu extraction"),
+          h5("5 premières lignes"),
+          DTOutput(ns("ext_head")),
+          hr(),
+          h5("5 dernières lignes"),
+          DTOutput(ns("ext_tail"))
+        )
+      )
+    )
+  )
+}
+
+mod_anom_server <- function(id, ret_full_r) {
+  moduleServer(id, function(input, output, session) {
+
+    anom_dt <- reactiveVal(NULL)
+    extract_dt <- reactiveVal(NULL)
+    extract_path <- reactiveVal(NULL)
+    status_txt <- reactiveVal("Aucun fichier anomalies chargé.")
+
+    output$status <- renderUI(tags$div(tags$strong(status_txt())))
+
+    # Preview automatique anomalies dès upload
+    observeEvent(input$anom_file, {
+      extract_dt(NULL); extract_path(NULL)
+
+      if (is.null(input$anom_file)) {
+        anom_dt(NULL)
+        status_txt("Aucun fichier anomalies chargé.")
+        return()
+      }
+
+      status_txt("Lecture anomalies (preview)...")
+
+      a <- tryCatch({
+        as.data.table(read_excel(input$anom_file$datapath))
+      }, error = function(e) NULL)
+
+      if (is.null(a)) {
+        anom_dt(NULL)
+        status_txt("Impossible de lire anomalies (Excel). L’app reste stable.")
+        return()
+      }
+
+      anom_dt(a)
+      status_txt("Anomalies chargées (preview OK).")
+    })
+
+    output$anom_preview <- renderDT({
+      a <- anom_dt()
+      if (is.null(a)) return(datatable(data.table(Info="Charge un fichier anomalies_dq.xlsx pour afficher la preview."), rownames = FALSE))
+      datatable(head(a, 5), options = list(dom="t", scrollX = TRUE), rownames = FALSE)
+    })
+
+    # Extraction sur clic, seulement si Retour4C complet présent
+    observeEvent(input$btn_extract, {
+      a <- anom_dt()
+      if (is.null(a)) {
+        showNotification("Charge d’abord anomalies_dq.xlsx (preview obligatoire).", type = "warning", duration = 6)
+        return()
+      }
+      dt <- ret_full_r()
+      if (is.null(dt)) {
+        showNotification("Charge d’abord Retour4C complet dans l’onglet 2.", type = "warning", duration = 6)
+        return()
+      }
+      if (!"ID_CONTRAT" %in% names(a)) {
+        showNotification("La colonne ID_CONTRAT est absente dans anomalies_dq.xlsx.", type = "error", duration = 8)
+        return()
+      }
+
+      status_txt("Extraction en cours...")
+
+      withProgress(message = "Extraction...", value = 0, {
+        incProgress(0.3)
+
+        out <- tryCatch(find_contract_rows(dt, a), error = function(e) data.table(Message = e$message))
+        incProgress(0.7)
+
+        extract_dt(out)
+
+        out_file <- file.path(tempdir(), "ead_rwa_ano_dq.xlsx")
+        ok <- write_xlsx_safe(out, out_file)
+        if (ok) extract_path(out_file)
+
+        status_txt(if (ok) "Extraction terminée + Excel généré." else "Extraction terminée (Excel non généré).")
+        showNotification("Extraction terminée.", type = "message", duration = 5)
+      })
+    })
+
+    output$ext_head <- renderDT({
+      x <- extract_dt()
+      if (is.null(x)) return(datatable(data.table(Info="Aucune extraction effectuée."), rownames = FALSE))
+      datatable(head(x, 5), options = list(dom="t", scrollX = TRUE), rownames = FALSE)
+    })
+
+    output$ext_tail <- renderDT({
+      x <- extract_dt()
+      if (is.null(x)) return(datatable(data.table(Info="Aucune extraction effectuée."), rownames = FALSE))
+      datatable(tail(x, 5), options = list(dom="t", scrollX = TRUE), rownames = FALSE)
+    })
+
+    output$dl_extract <- downloadHandler(
+      filename = function() "ead_rwa_ano_dq.xlsx",
+      content = function(file) {
+        p <- extract_path()
+        if (is.null(p) || !file.exists(p)) {
+          # pas de crash
+          writeLines("Fichier non disponible.", file)
+        } else {
+          file.copy(p, file, overwrite = TRUE)
+        }
+      }
+    )
+  })
+}
+
+################################################################################
+# UI + SERVER GLOBAL
+################################################################################
+ui <- page_navbar(
+  title = "RWA Bâle - Retour4C & Data Quality",
+  theme = bs_theme(version = 5, bootswatch = "flatly"),
+  useShinyjs(),
+
+  nav_panel("1) Calcul RWA", mod_calc_ui("calc")),
+  nav_panel("2) Retour4C",     mod_retour4c_ui("ret")),
+  nav_panel("3) Anomalies DQ", mod_anom_ui("anom"))
+)
+
+server <- function(input, output, session) {
+
+  mod_calc_server("calc")
+
+  ret <- mod_retour4c_server("ret")
+
+  mod_anom_server("anom", ret_full_r = ret$ret_full)
+}
+
+shinyApp(ui, server)
