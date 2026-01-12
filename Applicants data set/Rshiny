@@ -1,9 +1,7 @@
 # ============================================================
 #  Application RShiny RWA - Standard & IRBA + Retour4C + DQ
-#  Version: renforcement Module 3 (Anomalies -> Extraction)
-#           + auto-détection sep/dec + description globale
-#           + format FR (milliers + 2 décimales) dans synthèses
-#           + gestion d'erreurs "audit-friendly"
+#  Version: Module 2 bouton synthèses
+#           + Module 4 recalcul avec 1 seule variable corrigée
 # ============================================================
 
 suppressPackageStartupMessages({
@@ -20,13 +18,7 @@ suppressPackageStartupMessages({
 # -----------------------------
 # Utils: gestion d'erreurs
 # -----------------------------
-fmt_trace <- function() {
-  # Traceback lisible pour UI (pas de "line number" garanti en Shiny)
-  paste(capture.output(utils::capture.output(traceback())), collapse = "\n")
-}
-
 safe_run <- function(action_label, prereq_text, expr) {
-  # Encapsule une action: retourne list(ok=TRUE,result=..) ou list(ok=FALSE, user_msg=.., debug=..)
   tryCatch(
     {
       res <- eval.parent(substitute(expr))
@@ -46,13 +38,6 @@ safe_run <- function(action_label, prereq_text, expr) {
         debug = dbg
       )
     }
-  )
-}
-
-ui_error_box <- function(id) {
-  # Box UI standard pour afficher erreurs + détails techniques
-  tagList(
-    uiOutput(id)
   )
 }
 
@@ -77,20 +62,25 @@ render_error_box <- function(err_rv) {
 # Utils: lecture gros fichiers (CSV/TXT)
 # Auto-détection sep + heuristique dec
 # -----------------------------
+count_fixed <- function(s, pattern) {
+  # compte les occurrences de pattern (string fixe)
+  m <- gregexpr(pattern, s, fixed = TRUE)[[1]]
+  if (length(m) == 1 && m[1] == -1) return(0L)
+  length(m)
+}
+
 detect_sep <- function(path) {
-  # Heuristique simple: compter séparateurs dans la première ligne non vide
   ln <- readLines(path, n = 5, warn = FALSE, encoding = "UTF-8")
   ln <- ln[nzchar(ln)]
   if (length(ln) == 0) return(",")
-  l1 <- ln[1]
 
+  l1 <- ln[1]
   candidates <- c(";", ",", "\t", "|")
-  counts <- sapply(candidates, function(s) stringi::stri_count_fixed(l1, s))
+  counts <- sapply(candidates, function(s) count_fixed(l1, s))
   candidates[which.max(counts)]
 }
 
 detect_dec <- function(sep) {
-  # Heuristique: en France sep=";" => dec="," souvent. Sinon "."
   if (identical(sep, ";")) "," else "."
 }
 
@@ -129,7 +119,6 @@ safe_fread_full <- function(path) {
 # Utils: préparation de données Retour4C
 # -----------------------------
 to_num_safe <- function(x) {
-  # Conversion douce vers numeric (gère virgules/espaces)
   if (is.numeric(x)) return(x)
   x <- as.character(x)
   x <- gsub("\u00A0", " ", x)      # NBSP
@@ -139,7 +128,6 @@ to_num_safe <- function(x) {
 }
 
 normalize_colnames <- function(dt) {
-  # Trim + garder noms originaux mais nettoyer les espaces
   setnames(dt, trimws(names(dt)))
   dt
 }
@@ -148,33 +136,26 @@ prepare_retour4c <- function(dt) {
   dt <- as.data.table(dt)
   dt <- normalize_colnames(dt)
 
-  # Ajout identifiant technique (traçabilité)
   if (!"OBS_ID" %in% names(dt)) dt[, OBS_ID := .I]
 
-  # Colonnes "dimension" attendues (créées si absentes)
   for (cn in c("GoldenSource", "PRTF", "SSPRTF")) {
     if (!cn %in% names(dt)) dt[, (cn) := NA_character_]
     dt[is.na(get(cn)) | trimws(get(cn)) == "", (cn) := "UNKNOWN"]
   }
 
-  # Date arrêté
   if (!"ASOF_DT" %in% names(dt)) dt[, ASOF_DT := NA_character_]
 
-  # Création ASOF en Date si possible (multi-formats)
   dt[, ASOF := suppressWarnings(as.IDate(ASOF_DT, format="%Y-%m-%d"))]
-  # fallback si format FR
   idx_na <- is.na(dt$ASOF) & !is.na(dt$ASOF_DT)
   if (any(idx_na)) {
     dt[idx_na, ASOF := suppressWarnings(as.IDate(ASOF_DT, format="%d/%m/%Y"))]
   }
 
-  # Montants attendus (créés si absents)
   for (cn in c("Encours", "EAD", "RWA")) {
     if (!cn %in% names(dt)) dt[, (cn) := NA_real_]
     dt[, (cn) := to_num_safe(get(cn))]
   }
 
-  # IDs possibles (si présents, on force en character + trim)
   id_cols <- c("SG_CONTRACT_ID","SG_CONTR_BCE","SG_CONTR_3D_ID","SG_FACILITY_ID","SG_ID_ENREGISTRMNT")
   for (cn in intersect(id_cols, names(dt))) {
     dt[, (cn) := trimws(as.character(get(cn)))]
@@ -187,29 +168,20 @@ prepare_retour4c <- function(dt) {
 # Utils: canonisation IDs (Module 3)
 # -----------------------------
 canon_id <- function(x) {
-  # Standardise les identifiants pour matching robuste:
-  # - character
-  # - trim
-  # - upper
-  # - suppression espaces internes
-  # - tentative de conversion si scientific notation "1.23E+10"
   x <- as.character(x)
   x <- trimws(x)
   x <- toupper(x)
   x <- gsub("\\s+", "", x)
 
-  # Si format scientifique, tentative conversion vers string "plein"
   sci <- grepl("^[0-9]+\\.?[0-9]*E[+-]?[0-9]+$", x, ignore.case = TRUE)
   if (any(sci, na.rm = TRUE)) {
     suppressWarnings({
       num <- as.numeric(x[sci])
-      # format sans scientifique (attention: précision > 15 digits non garantie si Excel a altéré l'ID)
       x[sci] <- format(num, scientific = FALSE, trim = TRUE, digits = 22)
-      x[sci] <- gsub("\\.0$", "", x[sci]) # enlever .0 si entier
+      x[sci] <- gsub("\\.0$", "", x[sci])
       x[sci] <- gsub("\\s+", "", x[sci])
     })
   }
-
   x
 }
 
@@ -219,7 +191,6 @@ canon_id <- function(x) {
 datatable_fr <- function(df, digits_cols = NULL) {
   dt <- datatable(df, options = list(pageLength = 10, scrollX = TRUE))
   if (!is.null(digits_cols) && length(digits_cols) > 0) {
-    # formatRound gère mark/decMark
     dt <- formatRound(dt, columns = digits_cols, digits = 2, mark = " ", decMark = ",")
   }
   dt
@@ -231,9 +202,7 @@ datatable_fr <- function(df, digits_cols = NULL) {
 ui <- fluidPage(
   useShinyjs(),
   theme = bs_theme(version = 5, bootswatch = "flatly"),
-  tags$style(HTML("
-    .small-note { font-size: 12px; color: #666; }
-  ")),
+  tags$style(HTML(".small-note { font-size: 12px; color: #666; }")),
 
   titlePanel("Application RShiny RWA - Standard & IRBA | Retour4C | Data Quality"),
 
@@ -289,13 +258,13 @@ ui <- fluidPage(
           card(
             card_header("Chargement Retour4C (CSV ou TXT)"),
             fileInput("ret_file", "Choisir Retour4C (.csv/.txt)", accept = c(".csv",".txt")),
-            div(class="small-note",
-                "Le séparateur et le décimal sont détectés automatiquement (plus de champs sep/dec dans l'IHM)."),
+            div(class="small-note", "Le séparateur et le décimal sont détectés automatiquement."),
             actionButton("btn_preview", "Afficher preview (5 lignes)"),
             actionButton("btn_load", "Charger complet + préparer"),
+            actionButton("btn_syn", "Calculer les synthèses"),
             hr(),
             uiOutput("ret_status"),
-            ui_error_box("err_mod2")
+            uiOutput("err_mod2")
           )
         ),
         column(8,
@@ -321,9 +290,9 @@ ui <- fluidPage(
             actionButton("btn_ano_preview", "Afficher preview anomalies (5 lignes)"),
             actionButton("btn_extract", "Extraire dans Retour4C"),
             hr(),
-            ui_error_box("err_mod3"),
+            uiOutput("err_mod3"),
             div(class="small-note",
-                "Important: L'extraction nécessite un Retour4C chargé & préparé (Module 2) et au moins 1 colonne ID dans Retour4C.")
+                "Extraction = Retour4C chargé/préparé + anomalies chargées. Retour4C doit contenir au moins une colonne ID.")
           )
         ),
         column(8,
@@ -333,9 +302,7 @@ ui <- fluidPage(
               tabPanel("Preview anomalies", DTOutput("ano_preview")),
               tabPanel("Résultat extraction", DTOutput("ano_extract")),
               tabPanel("Diagnostic matching", verbatimTextOutput("ano_diag")),
-              tabPanel("Export",
-                downloadButton("dl_extract", "Télécharger ead_rwa_ano_dq.xlsx")
-              )
+              tabPanel("Export", downloadButton("dl_extract", "Télécharger ead_rwa_ano_dq.xlsx"))
             )
           )
         )
@@ -351,15 +318,12 @@ ui <- fluidPage(
             numericInput("recalc_haircut", "Haircut (%)", value = 20, min = 0, max = 100),
             actionButton("btn_recalc", "Recalculer & comparer"),
             hr(),
-            ui_error_box("err_mod4"),
+            uiOutput("err_mod4"),
             downloadButton("dl_recalc", "Télécharger rwa_recalc_compare.xlsx")
           )
         ),
         column(8,
-          card(
-            card_header("Résultats"),
-            DTOutput("recalc_tbl")
-          )
+          card(card_header("Résultats"), DTOutput("recalc_tbl"))
         )
       )
     )
@@ -371,40 +335,38 @@ ui <- fluidPage(
 # ============================================================
 server <- function(input, output, session) {
 
-  # ---- erreurs par module (reactiveVal)
-  err_mod2 <- reactiveVal(NULL)
-  err_mod3 <- reactiveVal(NULL)
-  err_mod4 <- reactiveVal(NULL)
+  # Erreurs par module
+  err_mod2_rv <- reactiveVal(NULL)
+  err_mod3_rv <- reactiveVal(NULL)
+  err_mod4_rv <- reactiveVal(NULL)
 
-  output$err_mod2 <- render_error_box(err_mod2)
-  output$err_mod3 <- render_error_box(err_mod3)
-  output$err_mod4 <- render_error_box(err_mod4)
+  output$err_mod2 <- render_error_box(err_mod2_rv)
+  output$err_mod3 <- render_error_box(err_mod3_rv)
+  output$err_mod4 <- render_error_box(err_mod4_rv)
 
-  # ---- Données réactives
-  ret_raw <- reactiveVal(NULL)       # Retour4C brut (après fread full)
-  ret_prep <- reactiveVal(NULL)      # Retour4C préparé
-  ret_meta <- reactiveVal(list(sep=NULL, dec=NULL, loaded=FALSE))
+  # Données réactives
+  ret_raw <- reactiveVal(NULL)
+  ret_prep <- reactiveVal(NULL)
+  ret_meta <- reactiveVal(list(sep=NULL, dec=NULL, loaded=FALSE, loading=FALSE))
   ret_preview_rv <- reactiveVal(NULL)
 
-  ano_dt <- reactiveVal(NULL)        # anomalies (dt)
+  syn_rv <- reactiveVal(NULL)  # ✅ synthèses calculées sur bouton
+
+  ano_dt <- reactiveVal(NULL)
   ano_preview_rv <- reactiveVal(NULL)
-  extract_dt <- reactiveVal(NULL)    # extraction résultat
+  extract_dt <- reactiveVal(NULL)
   diag_txt <- reactiveVal("")
 
   recalc_dt <- reactiveVal(NULL)
 
-  # ---- statut chargement + minuteur simple
+  # statut chargement
   load_start <- reactiveVal(NULL)
   output$ret_status <- renderUI({
     meta <- ret_meta()
     if (isTRUE(meta$loading)) {
-      # minuteur
       t0 <- load_start()
       secs <- if (!is.null(t0)) as.integer(difftime(Sys.time(), t0, units="secs")) else 0
-      div(
-        tags$b("⏳ Fichier en cours de chargement... "),
-        tags$span(paste0("(", secs, "s)"))
-      )
+      div(tags$b("⏳ Fichier en cours de chargement... "), tags$span(paste0("(", secs, "s)")))
     } else if (isTRUE(meta$loaded)) {
       div(tags$b("✅ Fichier chargé avec succès."), tags$span(class="small-note", paste0(" sep=", meta$sep, " dec=", meta$dec)))
     } else {
@@ -412,24 +374,21 @@ server <- function(input, output, session) {
     }
   })
 
-  # ============================================================
-  # MODULE 1 - Calcul RWA
-  # ============================================================
+  # -----------------------------
+  # MODULE 1 (inchangé)
+  # -----------------------------
   output$calc_out <- renderPrint({
     if (input$meth == "Standard") {
       ead_i <- input$ead_init
       ead_c <- input$ead_corr
       rw_i <- input$rw_init/100
       rw_c <- input$rw_corr/100
-
-      # sûreté/haircut appliquée sur EAD
       hc <- input$haircut/100
       adj <- if (isTRUE(input$surete)) (1 - hc) else 1
 
       rwa_i <- (ead_i * adj) * rw_i
       rwa_c <- (ead_c * adj) * rw_c
 
-      # bilan / hors-bilan
       ccf_i <- input$ccf_init/100
       ccf_c <- input$ccf_corr/100
 
@@ -439,22 +398,15 @@ server <- function(input, output, session) {
       rwa_hb_c <- (input$ead_hb_corr * ccf_c) * rw_c
 
       list(
-        Standard = data.frame(
-          RWA_initial = rwa_i,
-          RWA_corrige = rwa_c,
-          Delta = rwa_c - rwa_i
-        ),
+        Standard = data.frame(RWA_initial = rwa_i, RWA_corrige = rwa_c, Delta = rwa_c - rwa_i),
         Bilan_HorsBilan = data.frame(
-          RWA_B_initial = rwa_b_i,
-          RWA_B_corrige = rwa_b_c,
-          RWA_HB_initial = rwa_hb_i,
-          RWA_HB_corrige = rwa_hb_c,
+          RWA_B_initial = rwa_b_i, RWA_B_corrige = rwa_b_c,
+          RWA_HB_initial = rwa_hb_i, RWA_HB_corrige = rwa_hb_c,
           RWA_Total_initial = rwa_b_i + rwa_hb_i,
           RWA_Total_corrige = rwa_b_c + rwa_hb_c
         )
       )
     } else {
-      # IRBA simplifié (structure; formule complète à brancher dans votre moteur IRB)
       ead_i <- input$ead_init
       ead_c <- input$ead_corr
       pd_i <- input$pd_init/100
@@ -463,8 +415,6 @@ server <- function(input, output, session) {
       lgd_c <- input$lgd_corr/100
       sc <- input$scaling
 
-      # "Proxy" K (exemple) : K ≈ PD * LGD (à remplacer par fonction BCBS complète si besoin)
-      # Ici on reste simple car votre moteur IRB peut être plus détaillé.
       K_i <- pd_i * lgd_i
       K_c <- pd_c * lgd_c
 
@@ -501,17 +451,17 @@ server <- function(input, output, session) {
     ggplot(df, aes(x=Type, y=RWA)) + geom_col() + theme_minimal()
   })
 
-  # ============================================================
+  # -----------------------------
   # MODULE 2 - Retour4C
-  # ============================================================
+  # -----------------------------
   observeEvent(input$btn_preview, {
-    err_mod2(NULL)
+    err_mod2_rv(NULL)
     req(input$ret_file)
 
     res <- safe_run(
-      action_label = "Module 2 / Preview Retour4C",
-      prereq_text  = "Sélectionner un fichier Retour4C (.csv ou .txt). Vérifier que le fichier n'est pas vide.",
-      expr = {
+      "Module 2 / Preview Retour4C",
+      "Sélectionner un fichier Retour4C (.csv ou .txt). Vérifier qu'il n'est pas vide.",
+      {
         pv <- safe_fread_preview(input$ret_file$datapath)
         ret_preview_rv(pv$dt)
         ret_meta(modifyList(ret_meta(), list(sep=pv$sep, dec=pv$dec)))
@@ -519,7 +469,7 @@ server <- function(input, output, session) {
       }
     )
 
-    if (!res$ok) err_mod2(res) else invisible(NULL)
+    if (!res$ok) err_mod2_rv(res)
   })
 
   output$ret_preview <- renderDT({
@@ -529,35 +479,37 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$btn_load, {
-    err_mod2(NULL)
+    err_mod2_rv(NULL)
     req(input$ret_file)
+
+    # reset synthèses à chaque nouveau chargement
+    syn_rv(NULL)
 
     ret_meta(modifyList(ret_meta(), list(loading=TRUE, loaded=FALSE)))
     load_start(Sys.time())
 
     res <- safe_run(
-      action_label = "Module 2 / Chargement complet + préparation",
-      prereq_text  = paste(
+      "Module 2 / Chargement complet + préparation",
+      paste(
         "1) Le fichier Retour4C doit être accessible (csv/txt).",
-        "2) Pour les synthèses: recommander ASOF_DT, GoldenSource, PRTF, Encours, EAD, RWA.",
-        "3) Pour extraction anomalies: recommander au moins une colonne ID (SG_CONTRACT_ID ou autre).",
-        sep = "\n- "
+        "2) Pour les synthèses, recommandé: ASOF_DT, GoldenSource, PRTF, Encours, EAD, RWA.",
+        "3) Pour extraction anomalies: au moins 1 colonne ID (SG_CONTRACT_ID, etc.).",
+        sep="\n- "
       ),
-      expr = {
+      {
         full <- safe_fread_full(input$ret_file$datapath)
         dt_p <- prepare_retour4c(full$dt)
 
         ret_raw(full$dt)
         ret_prep(dt_p)
         ret_meta(list(sep=full$sep, dec=full$dec, loading=FALSE, loaded=TRUE))
-
         dt_p
       }
     )
 
     if (!res$ok) {
       ret_meta(modifyList(ret_meta(), list(loading=FALSE, loaded=FALSE)))
-      err_mod2(res)
+      err_mod2_rv(res)
     }
   })
 
@@ -566,15 +518,12 @@ server <- function(input, output, session) {
     dt <- ret_prep()
     if (is.null(dt)) return(div(class="small-note", "Charger Retour4C pour afficher l'arrêté et la description globale."))
 
-    # Arrêté (max ASOF)
-    asof_max <- if ("ASOF" %in% names(dt)) dt[, max(ASOF, na.rm=TRUE)] else NA
-    asof_max_txt <- if (is.finite(as.numeric(asof_max))) as.character(asof_max) else "NA"
+    asof_max <- if ("ASOF" %in% names(dt)) dt[, suppressWarnings(max(ASOF, na.rm=TRUE))] else NA
+    asof_max_txt <- if (!is.na(asof_max)) as.character(asof_max) else "NA"
 
-    # Description globale (résumé)
     n <- nrow(dt); p <- ncol(dt)
     mem_mb <- round(as.numeric(object.size(dt)) / 1024^2, 1)
 
-    # Mini data dictionary (sample pour performance)
     smp_n <- min(50000, n)
     smp <- dt[seq_len(smp_n)]
     dict <- data.table(
@@ -582,8 +531,8 @@ server <- function(input, output, session) {
       classe = sapply(smp, function(x) paste(class(x), collapse=",")),
       pct_na = round(100 * sapply(smp, function(x) mean(is.na(x))), 2),
       exemple = sapply(smp, function(x) {
-        v <- x[which(!is.na(x))[1]]
-        if (length(v)==0) "" else as.character(v)
+        idx <- which(!is.na(x))[1]
+        if (is.na(idx)) "" else as.character(x[idx])
       })
     )
 
@@ -596,7 +545,7 @@ server <- function(input, output, session) {
         tags$li(paste0("Nombre de lignes: ", format(n, big.mark=" ", decimal.mark=","))),
         tags$li(paste0("Nombre de colonnes: ", p)),
         tags$li(paste0("Taille en mémoire (approx): ", mem_mb, " MB")),
-        tags$li(paste0("Colonnes principales attendues: ASOF_DT, GoldenSource, PRTF, SSPRTF, Encours, EAD, RWA"))
+        tags$li("Colonnes principales recommandées: ASOF_DT, GoldenSource, PRTF, SSPRTF, Encours, EAD, RWA")
       ),
       h5("Dictionnaire (échantillon)"),
       DTOutput("ret_dict")
@@ -621,12 +570,8 @@ server <- function(input, output, session) {
     datatable(dict, options = list(scrollX=TRUE, pageLength=10))
   })
 
-  # Synthèses
-  compute_syntheses <- reactive({
-    dt <- ret_prep()
-    req(dt)
-
-    # GoldenSource
+  # Calcul synthèses (fonction)
+  compute_syntheses <- function(dt) {
     gs <- dt[, .(
       Nbre_observations = .N,
       Encours_MEUR = sum(Encours, na.rm=TRUE)/1e6,
@@ -634,7 +579,6 @@ server <- function(input, output, session) {
       RWA_MEUR = sum(RWA, na.rm=TRUE)/1e6
     ), by = .(ASOF, GoldenSource)]
 
-    # Total par ASOF (toutes GS) si besoin, ou TOTAL par GoldenSource (ici: TOTAL global par ASOF)
     gs_total <- dt[, .(
       Nbre_observations = .N,
       Encours_MEUR = sum(Encours, na.rm=TRUE)/1e6,
@@ -643,7 +587,6 @@ server <- function(input, output, session) {
     ), by = .(ASOF)][, GoldenSource := "TOTAL"][]
     gs_out <- rbind(gs, gs_total, fill=TRUE)
 
-    # Portefeuille
     pr <- dt[, .(
       Nbre_observations = .N,
       Encours_MEUR = sum(Encours, na.rm=TRUE)/1e6,
@@ -660,54 +603,57 @@ server <- function(input, output, session) {
     pr_out <- rbind(pr, pr_total, fill=TRUE)
 
     list(gs = gs_out, pr = pr_out)
+  }
+
+  # ✅ Bouton "Calculer les synthèses"
+  observeEvent(input$btn_syn, {
+    err_mod2_rv(NULL)
+    req(ret_prep())
+
+    res <- safe_run(
+      "Module 2 / Calcul des synthèses",
+      "Charger Retour4C puis cliquer 'Charger complet + préparer'. Colonnes recommandées: ASOF_DT, GoldenSource, PRTF, Encours, EAD, RWA.",
+      {
+        syn <- compute_syntheses(ret_prep())
+        syn_rv(syn)
+        syn
+      }
+    )
+    if (!res$ok) err_mod2_rv(res)
   })
 
   output$syn_gs <- renderDT({
-    dt <- ret_prep()
-    if (is.null(dt)) return(datatable(data.frame()))
-    syn <- compute_syntheses()
-
-    # format FR: milliers + 2 décimales
-    datatable_fr(
-      syn$gs,
-      digits_cols = c("Encours_MEUR","EAD_MEUR","RWA_MEUR")
-    )
+    syn <- syn_rv()
+    if (is.null(syn)) return(datatable(data.frame()))
+    datatable_fr(syn$gs, digits_cols = c("Encours_MEUR","EAD_MEUR","RWA_MEUR"))
   })
 
   output$syn_prtf <- renderDT({
-    dt <- ret_prep()
-    if (is.null(dt)) return(datatable(data.frame()))
-    syn <- compute_syntheses()
-
-    datatable_fr(
-      syn$pr,
-      digits_cols = c("Encours_MEUR","EAD_MEUR","RWA_MEUR")
-    )
+    syn <- syn_rv()
+    if (is.null(syn)) return(datatable(data.frame()))
+    datatable_fr(syn$pr, digits_cols = c("Encours_MEUR","EAD_MEUR","RWA_MEUR"))
   })
 
-  # ============================================================
-  # MODULE 3 - Anomalies -> Extraction (RENFORCÉ)
-  # ============================================================
+  # -----------------------------
+  # MODULE 3 - Anomalies -> Extraction (inchangé vs version précédente renforcée)
+  # -----------------------------
   observeEvent(input$btn_ano_preview, {
-    err_mod3(NULL)
+    err_mod3_rv(NULL)
     req(input$ano_file)
 
     res <- safe_run(
-      action_label = "Module 3 / Preview anomalies",
-      prereq_text  = "Sélectionner anomalies_dq.xlsx. La colonne ID_CONTRAT doit exister (ou être renommée/mappée).",
-      expr = {
-        # IMPORTANT: on force tout en texte pour éviter la conversion Excel -> numeric/scientific
+      "Module 3 / Preview anomalies",
+      "Sélectionner anomalies_dq.xlsx. La colonne ID_CONTRAT doit exister.",
+      {
         a <- read_excel(input$ano_file$datapath, col_types = "text")
         a <- as.data.table(a)
         setnames(a, trimws(names(a)))
 
-        # trouver ID_CONTRAT de façon robuste (case-insensitive)
         cn_norm <- toupper(gsub("\\s+", "", names(a)))
         idx <- which(cn_norm == "ID_CONTRAT")
         if (length(idx) == 0) stop("Colonne ID_CONTRAT introuvable dans anomalies_dq.xlsx.")
         setnames(a, names(a)[idx[1]], "ID_CONTRAT")
 
-        # canonisation ID_CONTRAT
         a[, ID_CONTRAT_RAW := ID_CONTRAT]
         a[, ID_CONTRAT_CANON := canon_id(ID_CONTRAT)]
 
@@ -716,8 +662,7 @@ server <- function(input, output, session) {
         a
       }
     )
-
-    if (!res$ok) err_mod3(res)
+    if (!res$ok) err_mod3_rv(res)
   })
 
   output$ano_preview <- renderDT({
@@ -727,21 +672,18 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$btn_extract, {
-    err_mod3(NULL)
-    req(ano_dt())
-    req(ret_prep())
+    err_mod3_rv(NULL)
+    req(ano_dt()); req(ret_prep())
 
     res <- safe_run(
-      action_label = "Module 3 / Extraction anomalies dans Retour4C",
-      prereq_text  = paste(
-        "1) Charger Retour4C (Module 2) et exécuter 'Charger complet + préparer'.",
-        "2) anomalies_dq.xlsx doit contenir ID_CONTRAT.",
-        "3) Retour4C doit contenir au moins une colonne ID parmi:",
-        "   SG_CONTRACT_ID, SG_CONTR_BCE, SG_CONTR_3D_ID, SG_FACILITY_ID, SG_ID_ENREGISTRMNT",
-        "4) Vérifier que les IDs n'ont pas été altérés par Excel (scientific notation, zéros initiaux).",
-        sep = "\n"
+      "Module 3 / Extraction anomalies dans Retour4C",
+      paste(
+        "1) Charger Retour4C (Module 2) + préparation.",
+        "2) anomalies: ID_CONTRAT en texte (pas de scientific).",
+        "3) Retour4C: au moins 1 colonne ID: SG_CONTRACT_ID / SG_CONTR_BCE / SG_CONTR_3D_ID / SG_FACILITY_ID / SG_ID_ENREGISTRMNT.",
+        sep="\n"
       ),
-      expr = {
+      {
         dt <- copy(ret_prep())
         a  <- copy(ano_dt())
 
@@ -749,31 +691,17 @@ server <- function(input, output, session) {
         present <- intersect(id_cols, names(dt))
         if (length(present) == 0) stop("Aucune colonne ID connue n'est présente dans Retour4C.")
 
-        # Canoniser les colonnes ID dans Retour4C (une seule fois, columns *_CANON)
         for (cn in present) {
           canon_name <- paste0(cn, "_CANON")
-          if (!canon_name %in% names(dt)) {
-            dt[, (canon_name) := canon_id(get(cn))]
-          }
+          if (!canon_name %in% names(dt)) dt[, (canon_name) := canon_id(get(cn))]
         }
 
-        # Canoniser la liste d'IDs anomalies
         ids <- unique(na.omit(a$ID_CONTRAT_CANON))
-        if (length(ids) == 0) stop("Aucun ID_CONTRAT exploitable (vide) dans anomalies.")
+        if (length(ids) == 0) stop("Aucun ID_CONTRAT exploitable dans anomalies.")
 
-        # Diagnostic rapide avant matching
-        diag <- list(
-          nb_ids_anomalies = length(ids),
-          nb_rows_retour4c = nrow(dt),
-          id_cols_present  = paste(present, collapse = ", ")
-        )
-
-        # Matching robuste par joins successifs (sans melt géant)
         matches <- list()
         for (cn in present) {
           canon_name <- paste0(cn, "_CANON")
-
-          # table anomalies pour join: une colonne qui s'appelle comme canon_name
           aj <- data.table(ID_CONTRAT_CANON = ids)
           setnames(aj, "ID_CONTRAT_CANON", canon_name)
 
@@ -788,66 +716,26 @@ server <- function(input, output, session) {
         }
 
         if (length(matches) == 0) {
-          # produire un diagnostic utile
-          # montrer quelques ids + exemples de valeurs canonisées dans Retour4C
-          ex_ids <- head(ids, 10)
-          ex_vals <- lapply(present, function(cn) head(na.omit(dt[[paste0(cn, "_CANON")]]), 10))
-          names(ex_vals) <- present
-
-          diag_txt(
-            paste0(
-              "=== Diagnostic matching ===\n",
-              "IDs anomalies (nb unique): ", diag$nb_ids_anomalies, "\n",
-              "Rows Retour4C: ", diag$nb_rows_retour4c, "\n",
-              "Colonnes ID présentes: ", diag$id_cols_present, "\n\n",
-              "Exemples IDs anomalies (canonisés):\n- ", paste(ex_ids, collapse = "\n- "), "\n\n",
-              "Exemples valeurs Retour4C (canonisées) par colonne:\n",
-              paste(
-                sapply(names(ex_vals), function(nm) {
-                  paste0("* ", nm, ":\n  - ", paste(ex_vals[[nm]], collapse = "\n  - "))
-                }),
-                collapse = "\n"
-              ), "\n\n",
-              "Piste: si Excel a transformé les IDs (scientific), vous risquez une perte de précision.\n",
-              "Solution: forcer ID_CONTRAT en texte dans Excel (format Texte) ou utiliser un export CSV."
-            )
-          )
-
+          diag_txt("0 match. Vérifier: (i) Excel a-t-il transformé les IDs ? (ii) espaces/format ; (iii) colonne ID correcte.")
           extract_dt(data.table())
           return(data.table())
         }
 
         out <- rbindlist(matches, fill = TRUE)
-        # garder une ligne unique par OBS_ID (si match sur plusieurs colonnes)
-        setorder(out, OBS_ID)
         out <- unique(out, by = "OBS_ID")
 
-        # Colonnes attendues pour export (si absentes, elles resteront NA)
         keep <- c("ID_CONTRAT_CANON", "ASOF_DT","PRTF","SSPRTF","Segment","PRODUCT_ID","Encours","EAD","RWA",
                   "MATCHED_ON","OBS_ID",
                   "SG_CONTRACT_ID","SG_CONTR_BCE","SG_CONTR_3D_ID","SG_FACILITY_ID","SG_ID_ENREGISTRMNT")
         keep <- intersect(keep, names(out))
         out <- out[, ..keep]
 
-        # rattacher ID_CONTRAT original si possible
-        # (optionnel: via join a)
         extract_dt(out)
-
-        diag_txt(
-          paste0(
-            "=== Diagnostic matching ===\n",
-            "IDs anomalies (nb unique): ", diag$nb_ids_anomalies, "\n",
-            "Matches: ", nrow(out), "\n",
-            "Colonnes ID testées: ", diag$id_cols_present, "\n",
-            "Note: MATCHED_ON indique sur quelle colonne l'ID a matché.\n"
-          )
-        )
-
+        diag_txt(paste0("Matches: ", nrow(out), " | colonnes ID testées: ", paste(present, collapse=", ")))
         out
       }
     )
-
-    if (!res$ok) err_mod3(res)
+    if (!res$ok) err_mod3_rv(res)
   })
 
   output$ano_extract <- renderDT({
@@ -856,9 +744,7 @@ server <- function(input, output, session) {
     datatable(dt, options = list(scrollX = TRUE, pageLength = 10))
   })
 
-  output$ano_diag <- renderPrint({
-    cat(diag_txt())
-  })
+  output$ano_diag <- renderPrint({ cat(diag_txt()) })
 
   output$dl_extract <- downloadHandler(
     filename = function() paste0("ead_rwa_ano_dq_", Sys.Date(), ".xlsx"),
@@ -871,77 +757,86 @@ server <- function(input, output, session) {
     }
   )
 
-  # ============================================================
-  # MODULE 4 - Recalcul (simple, à adapter à votre moteur exact)
-  # ============================================================
+  # -----------------------------
+  # MODULE 4 - Recalcul (✅ 1 variable corrigée suffit)
+  # -----------------------------
   observeEvent(input$btn_recalc, {
-    err_mod4(NULL)
-    req(ano_dt())
-    req(ret_prep())
+    err_mod4_rv(NULL)
+    req(ano_dt()); req(ret_prep())
 
     res <- safe_run(
-      action_label = "Module 4 / Recalcul & comparaison",
-      prereq_text  = paste(
-        "1) Retour4C chargé & préparé (Module 2).",
-        "2) anomalies chargé (Module 3).",
-        "3) Pour standard: EAD_corrige/RW_corrige/Surete doivent exister (sinon NA).",
-        "4) Pour IRBA: PD_corrige/LGD_corrige/M_corrige doivent exister.",
-        sep = "\n"
+      "Module 4 / Recalcul & comparaison",
+      paste(
+        "Pré-requis minimal:",
+        "1) Avoir une extraction (Module 3) OU relancer Extraction.",
+        "2) anomalies doit contenir ID_CONTRAT.",
+        "3) Pour recalcul Standard: il suffit d'avoir AU MOINS l'un des champs: RW_corrige OU EAD_corrige.",
+        "   - Si RW_corrige absent -> RW sera inféré via RWA/EAD depuis Retour4C (si possible).",
+        "   - Si EAD_corrige absent -> EAD de Retour4C sera utilisé.",
+        sep="\n"
       ),
-      expr = {
+      {
         a <- copy(ano_dt())
-        dt <- copy(ret_prep())
-
-        # on repart du résultat d'extraction si présent, sinon on refait extraction minimale
         ex <- extract_dt()
         if (is.null(ex) || nrow(ex) == 0) stop("Aucune extraction disponible. Lancer Module 3 -> Extraction d'abord.")
 
-        # joindre anomalies sur extraction par ID canonisé (si anomalies contient aussi canon)
-        # (ici, on suppose que la colonne ID_CONTRAT_CANON existe dans anomalies (créée au preview))
-        if (!"ID_CONTRAT_CANON" %in% names(a)) stop("Colonne ID_CONTRAT_CANON absente dans anomalies (relancer preview anomalies).")
+        if (!"ID_CONTRAT_CANON" %in% names(a)) stop("ID_CONTRAT_CANON absent dans anomalies. Relancer Preview anomalies.")
+        setkey(a, ID_CONTRAT_CANON); setkey(ex, ID_CONTRAT_CANON)
 
-        # On copie anomalies avec colonnes corrigées si présentes
-        corr_cols <- intersect(c("EAD_corrige","RW_corrige","CCF_corrige","Surete","PD_corrige","LGD_corrige","M_corrige","IRB_scaling"), names(a))
+        corr_cols <- intersect(c("EAD_corrige","RW_corrige","CCF_corrige","Surete",
+                                 "PD_corrige","LGD_corrige","M_corrige","IRB_scaling"), names(a))
         aj <- a[, c("ID_CONTRAT_CANON", corr_cols), with = FALSE]
-        setkey(aj, ID_CONTRAT_CANON)
-        setkey(ex, ID_CONTRAT_CANON)
-
-        x <- aj[ex]  # left join sur extraction
+        x <- aj[ex]   # join sur extraction
 
         hc <- input$recalc_haircut / 100
 
         if (input$recalc_meth == "standard") {
-          # fallback si champs corrigés manquants: utiliser valeurs Retour4C
-          # RW_retour4c non disponible => on utilise RWA/EAD si possible
-          # Ici on recalcule un RWA corrigé simple: RWA = EAD_corrige * RW_corrige
-          x[, EAD_used := fifelse(!is.na(EAD_corrige), to_num_safe(EAD_corrige), EAD)]
-          x[, RW_used  := fifelse(!is.na(RW_corrige), to_num_safe(RW_corrige)/100, NA_real_)]
 
-          # Sûreté
-          x[, Surete_used := fifelse(!is.na(Surete), as.integer(Surete), 0L)]
+          # 1) EAD utilisée : EAD_corrige si fourni sinon EAD Retour4C
+          if (!"EAD" %in% names(x)) x[, EAD := NA_real_]
+          x[, EAD_used := fifelse(!is.na(to_num_safe(EAD_corrige)), to_num_safe(EAD_corrige), EAD)]
+
+          # 2) RW utilisé :
+          # - si RW_corrige fourni => RW_used = RW_corrige/100
+          # - sinon => inférer RW via RWA/EAD (si possible)
+          if (!"RWA" %in% names(x)) x[, RWA := NA_real_]
+          x[, RW_from_retour4c := fifelse(!is.na(RWA) & !is.na(EAD) & EAD > 0, RWA / EAD, NA_real_)]
+
+          rw_corr_num <- if ("RW_corrige" %in% names(x)) to_num_safe(x$RW_corrige) else rep(NA_real_, nrow(x))
+          x[, RW_used := fifelse(!is.na(rw_corr_num), rw_corr_num/100, RW_from_retour4c)]
+
+          # 3) Sûreté (optionnelle)
+          surete_num <- if ("Surete" %in% names(x)) suppressWarnings(as.integer(x$Surete)) else rep(0L, nrow(x))
+          surete_num[is.na(surete_num)] <- 0L
+          x[, Surete_used := surete_num]
           x[, EAD_adj := fifelse(Surete_used == 1L, EAD_used * (1 - hc), EAD_used)]
 
+          # Contrôle minimal pour calculer
+          if (all(is.na(x$EAD_adj))) stop("Impossible de calculer: EAD_used est NA partout (ni EAD_corrige ni EAD Retour4C).")
+          if (all(is.na(x$RW_used))) stop("Impossible de calculer: RW_used est NA partout (RW_corrige absent et RW non inférable via RWA/EAD).")
+
           x[, RWA_calc_corrige := EAD_adj * RW_used]
+
         } else {
-          # IRBA: proxy
+          # IRBA (proxy) : nécessite PD/LGD au minimum
           x[, PD_used  := to_num_safe(PD_corrige)/100]
           x[, LGD_used := to_num_safe(LGD_corrige)/100]
-          x[, EAD_used := fifelse(!is.na(EAD_corrige), to_num_safe(EAD_corrige), EAD)]
-          x[, sc := fifelse(!is.na(IRB_scaling), to_num_safe(IRB_scaling), 1.0)]
+          if (!"EAD" %in% names(x)) x[, EAD := NA_real_]
+          x[, EAD_used := fifelse(!is.na(to_num_safe(EAD_corrige)), to_num_safe(EAD_corrige), EAD)]
+          x[, sc := fifelse(!is.na(to_num_safe(IRB_scaling)), to_num_safe(IRB_scaling), 1.0)]
           x[, K := PD_used * LGD_used]
+          if (all(is.na(x$K))) stop("IRBA: PD_corrige/LGD_corrige manquants ou non numériques.")
           x[, RWA_calc_corrige := 12.5 * K * EAD_used * sc]
         }
 
-        # comparaison vs Retour4C
         x[, RWA_retour4c := RWA]
         x[, Delta_RWA := RWA_calc_corrige - RWA_retour4c]
-
         recalc_dt(x)
         x
       }
     )
 
-    if (!res$ok) err_mod4(res)
+    if (!res$ok) err_mod4_rv(res)
   })
 
   output$recalc_tbl <- renderDT({
@@ -960,7 +855,6 @@ server <- function(input, output, session) {
       saveWorkbook(wb, file, overwrite = TRUE)
     }
   )
-
 }
 
 shinyApp(ui, server)
