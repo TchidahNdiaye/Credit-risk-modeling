@@ -1,0 +1,85 @@
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
+using System.Windows.Forms;
+
+class Program
+{
+    [STAThread]
+    static void Main()
+    {
+        string localBase = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "calculetteRWA"
+        );
+        string logDir = Path.Combine(localBase, "logs");
+        Directory.CreateDirectory(logDir);
+
+        string logFile      = Path.Combine(logDir, "stop.log");
+        string pidFile      = Path.Combine(localBase, "shiny.pid");
+        string ctrlPortFile = Path.Combine(localBase, "control.port");
+        string ctrlTokFile  = Path.Combine(localBase, "control.token");
+
+        void Log(string s) => File.AppendAllText(logFile, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {s}\n");
+        Log("=== STOP ===");
+
+        try
+        {
+            // Prefer endpoint stop (clean, releases mutex)
+            int ctrlPort = ReadInt(ctrlPortFile);
+            string token = File.Exists(ctrlTokFile) ? File.ReadAllText(ctrlTokFile).Trim() : "";
+
+            if (ctrlPort > 0 && !string.IsNullOrEmpty(token))
+            {
+                string url = $"http://127.0.0.1:{ctrlPort}/stop?token={token}";
+                Log("Calling stop endpoint: " + url);
+
+                var req = (HttpWebRequest)WebRequest.Create(url);
+                req.Method = "GET";
+                req.Timeout = 4000;
+
+                using (var resp = (HttpWebResponse)req.GetResponse())
+                {
+                    Log("HTTP " + (int)resp.StatusCode);
+                }
+
+                MessageBox.Show("calculetteRWA arrêtée (endpoint).", "Stop", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Fallback: kill PID (less clean if launcher not found)
+            if (!File.Exists(pidFile))
+                throw new FileNotFoundException("PID introuvable. L'application est peut-être déjà arrêtée.");
+
+            int pid = ReadInt(pidFile);
+            if (pid <= 0) throw new Exception("PID invalide.");
+
+            Process p = Process.GetProcessById(pid);
+            Log("Fallback kill PID: " + pid);
+            p.Kill(true);
+            p.WaitForExit(8000);
+
+            MessageBox.Show("calculetteRWA arrêtée (fallback PID).", "Stop", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            Log("FAILED: " + ex);
+            MessageBox.Show(
+                "Impossible d'arrêter calculetteRWA.\n\n" +
+                ex.Message + "\n\nLog: " + logFile,
+                "Erreur arrêt calculetteRWA",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+    }
+
+    static int ReadInt(string path)
+    {
+        if (!File.Exists(path)) return -1;
+        var t = File.ReadAllText(path).Trim();
+        if (int.TryParse(t, out int v)) return v;
+        return -1;
+    }
+}
