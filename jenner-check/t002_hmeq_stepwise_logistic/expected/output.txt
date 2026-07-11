@@ -1,0 +1,107 @@
+PROC CONTENTS
+-------------------------------------------------------------------------------
+
+Data Set Name: hmeq
+Observations:  40
+Variables:     13
+
+Variables (in alphabetical order):
+
+  #  Variable  Type    Len  Format  Label
+---  --------  ----  -----  ------  -----
+  1  BAD        Num      8          
+  2  CLAGE      Num      8          
+  3  CLNO       Num      8          
+  4  DEBTINC    Num      8          
+  5  DELINQ     Num      8          
+  6  DEROG      Num      8          
+  7  JOB       Char      8          
+  8  LOAN       Num      8          
+  9  MORTDUE    Num      8          
+ 10  NINQ       Num      8          
+ 11  REASON    Char      8          
+ 12  VALUE      Num      8          
+ 13  YOJ        Num      8          
+
+-------------------------------------------------------------------------------
+
+                                                  The MEANS Procedure
+
+ Variable        N   N Miss               Mean             Median           Std Dev           Minimum            Maximum
+ -----------------------------------------------------------------------------------------------------------------------
+ BAD            40        0          0.5000000          0.5000000         0.5063697         0.0000000          1.0000000
+ LOAN           40        0      19430.0000000      13650.0000000     14942.6973846      2900.0000000      65800.0000000
+ MORTDUE        40        0      72630.2750000      70411.5000000     35633.5843559      7750.0000000     161754.0000000
+ VALUE          40        0     106905.9500000     103047.0000000     38140.3293479     44083.0000000     215548.0000000
+ YOJ            40        0          7.9000000          8.0000000         5.9130451         0.0000000         20.0000000
+ DEROG          40        0          0.4250000          0.0000000         1.2585604         0.0000000          7.0000000
+ DELINQ         40        0          0.4500000          0.0000000         0.7143223         0.0000000          3.0000000
+ CLAGE          40        0        151.3807751        128.4611759        72.3528688        58.8610275        333.9133736
+ NINQ           40        0          1.4500000          0.0000000         2.7637767         0.0000000         13.0000000
+ CLNO           40        0         22.0000000         23.0000000         9.4407735         6.0000000         41.0000000
+ DEBTINC        40        0         33.7241479         35.5548805         8.6159974         6.8870241         48.9777317
+ -----------------------------------------------------------------------------------------------------------------------
+
+                                                   The FREQ Procedure
+
+                                 Cumulative    Cumulative
+BAD    Frequency    Percent     Frequency      Percent
+------------------------------------------------------------
+0             20     50.00           20        50.00
+1             20     50.00           40       100.00
+
+                                     Cumulative    Cumulative
+REASON     Frequency    Percent     Frequency      Percent
+----------------------------------------------------------------
+DebtCon           25     62.50           25        62.50
+HomeImp           15     37.50           40       100.00
+
+                                     Cumulative    Cumulative
+JOB        Frequency    Percent     Frequency      Percent
+----------------------------------------------------------------
+Mgr                8     20.00            8        20.00
+Office             9     22.50           17        42.50
+Other             13     32.50           30        75.00
+ProfExe            7     17.50           37        92.50
+Sales              2      5.00           39        97.50
+Self               1      2.50           40       100.00
+                                     
+---------------------------  --------
+Number of Observations Read        40
+Number of Observations Used        40
+
+            Response Profile            
+     Probability modeled is BAD='0'     
+
+Ordered Value  BAD       Total Frequency
+-------------  --------  ---------------
+            1  0                      20
+            2  1                      20
+
+                Class Level Information                
+
+Class       Levels  Values                             
+--------  --------  -----------------------------------
+BAD              2  0 1                                
+REASON           2  DebtCon HomeImp                    
+JOB              6  Mgr Office Other ProfExe Sales Self
+
+                                             
+---------------------------------------------
+Convergence criterion (GCONV=1E-8) satisfied.
+
+The LOGISTIC Procedure
+Response Variable: BAD
+
+Criterion     Value
+---------  --------
+AIC          57.452
+-2 Log L     55.452
+SC           59.141
+
+            Analysis of Maximum Likelihood Estimates            
+
+Parameter  Estimate  Standard Error  Wald Chi-Square  Pr > ChiSq
+---------  --------  --------------  ---------------  ----------
+Intercept    0.0000          0.3162           0.0000      1.0000
+

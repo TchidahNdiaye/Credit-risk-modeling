@@ -1,0 +1,7 @@
+{
+  "bundle": "t002_hmeq_stepwise_logistic",
+  "source_file": "Home Equity Loans Logistic regression/HMEQ_LogisticReg.sas",
+  "source_blob_sha": "5201bf3c8fffd36051cf58d399b2a512bab629fa",
+  "source_commit": "3d048ab8299e7b44cadf1e72790934fdff2d5cc8",
+  "notes": "PROC CONTENTS/MEANS/FREQ exploration plus the stepwise PROC LOGISTIC (slentry=0.05 slstay=0.01) predicting BAD from the HMEQ home-equity variables. Original reads libname mydata pointing at the author's local disk; substituted with a 40-row sample (20 BAD=0 / 20 BAD=1, seed=42) drawn directly from the repo's own 'Bart Baesens and all Book's Data Set/hmeq.csv'. Dropped the ODS EXCEL wrapper (hardcoded local path) and the PIE/GPLOT calls (no data to plot meaningfully at this sample size); kept the CONTENTS/MEANS/FREQ/LOGISTIC sequence exactly as authored."
+}

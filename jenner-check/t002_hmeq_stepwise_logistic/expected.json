@@ -1,0 +1,13 @@
+{
+  "_captured_at": "2026-07-11T06:25:00Z",
+  "_captured_run_id": "r_6ef412fdf64845b0a74e26c9c2cddf19",
+  "status": "ok",
+  "exit_code": 0,
+  "log_contains": [
+    "NOTE: Wrote hmeq (40 rows, 13 columns).",
+    "NOTE: PROC CONTENTS completed: 40 observations, 13 variables",
+    "NOTE: PROC LOGISTIC data=hmeq"
+  ],
+  "log_does_not_contain": ["ERROR:", "[JENNER-ERROR"],
+  "diagnostics": {"parse_warnings": [], "runtime_warnings": []}
+}

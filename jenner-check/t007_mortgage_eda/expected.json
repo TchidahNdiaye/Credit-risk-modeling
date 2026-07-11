@@ -1,0 +1,13 @@
+{
+  "_captured_at": "2026-07-11T06:50:00Z",
+  "_captured_run_id": "r_c0d6145119194aa79aaa7fd5930e3cf3",
+  "status": "ok",
+  "exit_code": 0,
+  "log_contains": [
+    "NOTE: Wrote mortgage (40 rows, 6 columns).",
+    "NOTE: PROC RANK data=mortgage1 out=Some(\"quint\") groups=5",
+    "NOTE: Wrote new (40 rows, 6 columns)."
+  ],
+  "log_does_not_contain": ["ERROR:", "[JENNER-ERROR"],
+  "diagnostics": {"parse_warnings": [], "runtime_warnings": []}
+}

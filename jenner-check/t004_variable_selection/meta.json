@@ -1,0 +1,7 @@
+{
+  "bundle": "t004_variable_selection",
+  "source_file": "Applicants data set/Applicants credit risk modeling/Applicants_Variable_Selection.sas",
+  "source_blob_sha": "622d54c340b81df3abef04dc66fc07dbd7637113",
+  "source_commit": "3d048ab8299e7b44cadf1e72790934fdff2d5cc8",
+  "notes": "Chi-square filter (PROC FREQ marital*good_bad / chisq) plus stepwise PROC LOGISTIC variable selection (slentry=0.10 slstay=0.05) across the full German-credit-style feature set (checking, history, purpose, savings, employed, marital, coapp, resident, property, other, housing). Original reads libname mydata pointing at the author's local disk; substituted with a 50-row mock sample built from the same column/category scheme the CLASS/MODEL statements reference (A1x/A3x/A4x/... status codes). Dropped the ODS EXCEL wrapper and the trailing plain-logistic block already covered by t001. Exit code is 1 (not 0) because PROC FREQ's sparse-cell WARNING ('% of cells have expected counts less than 5') is present in the log; status stays ok and there is no ERROR -- this matches documented SAS batch return-code convention where a WARNING-level condition raises the return code even without an ERROR."
+}

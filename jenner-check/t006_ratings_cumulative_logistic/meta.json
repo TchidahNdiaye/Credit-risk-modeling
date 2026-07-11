@@ -1,0 +1,7 @@
+{
+  "bundle": "t006_ratings_cumulative_logistic",
+  "source_file": "Classification for credit scoring.sas",
+  "source_blob_sha": "7d7e0e8e5e4f0d67ca132b54c5c3adbfbb3b7887",
+  "source_commit": "3d048ab8299e7b44cadf1e72790934fdff2d5cc8",
+  "notes": "Second technique from the script: PROC CONTENTS/MEANS/CORR exploration of agency ratings data, then a cumulative (ordinal) PROC LOGISTIC regressing the 10-level 'rating' response on financial ratios, with predicted probabilities output. The script's earlier bondrate2/sashelp-bondrate-based ordinal example was dropped -- sashelp.bondrate is not available on Jenner (confirmed live) -- and replaced with the script's own second ordinal example, which already targets mydata.ratings. Substituted the local libname with a 40-row sample drawn directly from the repo's own shipped 'Bart Baesens and all Book's Data Set/ratings.csv' (seed=9), same column names the MODEL statement references. Proportional-odds intercepts fit cleanly across all 9 rating cutpoints. Data step (with datalines) lives in script.sas itself rather than autoexec.sas so this bundle is self-contained for a single-file /v1/quick POST -- used as the PR body's runnable curl example."
+}

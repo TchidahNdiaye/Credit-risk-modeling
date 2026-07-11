@@ -1,0 +1,179 @@
+PROC CONTENTS
+-------------------------------------------------------------------------------
+
+Data Set Name: hmeq
+Observations:  50
+Variables:     13
+
+Variables (in alphabetical order):
+
+  #  Variable  Type    Len  Format  Label
+---  --------  ----  -----  ------  -----
+  1  BAD        Num      8          
+  2  CLAGE      Num      8          
+  3  CLNO       Num      8          
+  4  DEBTINC    Num      8          
+  5  DELINQ     Num      8          
+  6  DEROG      Num      8          
+  7  JOB       Char      8          
+  8  LOAN       Num      8          
+  9  MORTDUE    Num      8          
+ 10  NINQ       Num      8          
+ 11  REASON    Char      8          
+ 12  VALUE      Num      8          
+ 13  YOJ        Num      8          
+
+-------------------------------------------------------------------------------
+
+                                                  The MEANS Procedure
+
+ Variable        N   N Miss               Mean           Std Dev           Minimum            Maximum
+ ----------------------------------------------------------------------------------------------------
+ BAD            50        0          0.5000000         0.5050763         0.0000000          1.0000000
+ LOAN           50        0      20030.0000000     15895.1186192      6300.0000000      77400.0000000
+ MORTDUE        50        0      80164.6600000     53398.6297881      9999.0000000     228236.0000000
+ VALUE          50        0     109566.0000000     70718.3452624     32559.0000000     305514.0000000
+ YOJ            50        0          8.0600000         6.8939784         0.0000000         30.0000000
+ DEROG          50        0          0.4000000         1.1065667         0.0000000          6.0000000
+ DELINQ         50        0          0.3600000         0.9638359         0.0000000          6.0000000
+ CLAGE          50        0        157.8304342       117.2956708        11.1480685        628.9819479
+ NINQ           50        0          1.5800000         2.2414463         0.0000000         13.0000000
+ CLNO           50        0         21.0400000        11.7229236         2.0000000         64.0000000
+ DEBTINC        50        0         37.0886655        18.0180825        12.3867413        144.1890013
+ ----------------------------------------------------------------------------------------------------
+
+                                              Categorical freq in data set                                              
+
+                                                   The FREQ Procedure
+
+                                 Cumulative    Cumulative
+BAD    Frequency    Percent     Frequency      Percent
+------------------------------------------------------------
+0             25     50.00           25        50.00
+1             25     50.00           50       100.00
+
+                                     Cumulative    Cumulative
+JOB        Frequency    Percent     Frequency      Percent
+----------------------------------------------------------------
+Mgr                3      6.00            3         6.00
+Office            10     20.00           13        26.00
+Other             18     36.00           31        62.00
+ProfExe           15     30.00           46        92.00
+Sales              1      2.00           47        94.00
+Self               3      6.00           50       100.00
+
+                                     Cumulative    Cumulative
+REASON     Frequency    Percent     Frequency      Percent
+----------------------------------------------------------------
+DebtCon           35     70.00           35        70.00
+HomeImp           15     30.00           50       100.00
+                                              Categorical freq in data set                                              
+
+
+                                                 The HPSPLIT Procedure                                                  
+
+Model Information
+Response Variable         BAD
+Event Level               1
+Split Criterion           Entropy
+Pruning Method            Cost-Complexity
+Random Seed               12345
+Number of Observations    50
+
+Predictors
+    1. CLAGE
+    2. CLNO
+    3. DEBTINC
+    4. DELINQ
+    5. DEROG
+    6. JOB
+    7. LOAN
+    8. MORTDUE
+    9. NINQ
+   10. REASON
+   11. VALUE
+   12. YOJ
+
+Number of Leaves          4
+Final Tree Depth          3
+
+Fit Statistics
+  accuracy                   0.920000
+  misclass_rate              0.080000
+  log_loss                   0.232690
+
+ROC / AUC by Class
+Class                               AUC
+0                              0.920000
+1                              0.920000
+
+Variable Importance
+Variable                     Importance       Relative
+DEBTINC                        0.445007       0.445007
+MORTDUE                        0.288531       0.288531
+VALUE                          0.266462       0.266462
+CLAGE                          0.000000       0.000000
+CLNO                           0.000000       0.000000
+DELINQ                         0.000000       0.000000
+DEROG                          0.000000       0.000000
+JOB                            0.000000       0.000000
+LOAN                           0.000000       0.000000
+NINQ                           0.000000       0.000000
+REASON                         0.000000       0.000000
+YOJ                            0.000000       0.000000
+
+                                              Categorical freq in data set                                              
+
+
+                                                 The HPSPLIT Procedure                                                  
+
+Model Information
+Response Variable         BAD
+Event Level               1
+Split Criterion           Gini
+Pruning Method            Cost-Complexity
+Random Seed               12345
+Number of Observations    50
+
+Predictors
+    1. CLAGE
+    2. CLNO
+    3. DEBTINC
+    4. DELINQ
+    5. DEROG
+    6. JOB
+    7. LOAN
+    8. MORTDUE
+    9. NINQ
+   10. REASON
+   11. VALUE
+   12. YOJ
+
+Number of Leaves          2
+Final Tree Depth          1
+
+Fit Statistics
+  accuracy                   0.740000
+  misclass_rate              0.260000
+  log_loss                   0.488241
+
+ROC / AUC by Class
+Class                               AUC
+0                              0.740000
+1                              0.740000
+
+Variable Importance
+Variable                     Importance       Relative
+DEBTINC                        1.000000       1.000000
+CLAGE                          0.000000       0.000000
+CLNO                           0.000000       0.000000
+DELINQ                         0.000000       0.000000
+DEROG                          0.000000       0.000000
+JOB                            0.000000       0.000000
+LOAN                           0.000000       0.000000
+MORTDUE                        0.000000       0.000000
+NINQ                           0.000000       0.000000
+REASON                         0.000000       0.000000
+VALUE                          0.000000       0.000000
+YOJ                            0.000000       0.000000
+

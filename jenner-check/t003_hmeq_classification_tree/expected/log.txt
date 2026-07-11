@@ -1,0 +1,27 @@
+NOTE: Option OBS changed to 100.
+NOTE: DATA hmeq
+
+NOTE: Processing inline DATALINES (50 lines)
+
+NOTE: Read 50 rows from DATALINES.
+NOTE: Wrote hmeq (50 rows, 13 columns).
+NOTE: DATA elapsed:
+  wall  0.00 seconds
+  cpu   0.00 seconds
+NOTE: PROC CONTENTS data=hmeq
+
+NOTE: PROC CONTENTS completed: 50 observations, 13 variables
+NOTE: PROC MEANS
+NOTE: PROC MEANS statement used.
+NOTE: PROC FREQ
+NOTE: ODS plot written: freq_bad.spec.json
+NOTE: ODS plot written: freq_job.spec.json
+NOTE: ODS plot written: freq_reason.spec.json
+NOTE: PROC FREQ statement used.
+NOTE: ODS Graphics is ON (width=640px, height=480px, format=SVG).
+NOTE: PROC HPSPLIT data=hmeq
+
+NOTE: PROC HPSPLIT completed.
+NOTE: PROC HPSPLIT data=hmeq
+
+NOTE: PROC HPSPLIT completed.

@@ -1,0 +1,12 @@
+{
+  "_captured_at": "2026-07-11T06:35:00Z",
+  "_captured_run_id": "r_01a8376150d545dea04df412b422f295",
+  "status": "ok",
+  "exit_code": 1,
+  "log_contains": [
+    "NOTE: Wrote applicants (50 rows, 16 columns).",
+    "NOTE: PROC LOGISTIC data=applicants"
+  ],
+  "log_does_not_contain": ["ERROR:", "[JENNER-ERROR"],
+  "diagnostics": {"parse_warnings": [], "runtime_warnings": []}
+}

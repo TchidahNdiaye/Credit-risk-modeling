@@ -1,0 +1,183 @@
+---------------------------  --------
+Number of Observations Read        41
+Number of Observations Used        41
+
+            Response Profile            
+  Probability modeled is good_bad='0'   
+
+Ordered Value  good_bad  Total Frequency
+-------------  --------  ---------------
+            1  0                      17
+            2  1                      24
+
+        Class Level Information        
+
+Class       Levels  Values             
+--------  --------  -------------------
+checking         4  A11 A12 A13 A14    
+savings          5  A61 A62 A63 A64 A65
+
+                                             
+---------------------------------------------
+Convergence criterion (GCONV=1E-8) satisfied.
+
+                                                                                                                     
+---------------------------------------------------------------------------------------------------------------------
+WARNING: There is possibly a quasi-complete separation of data points. The maximum likelihood estimate may not exist.
+
+The LOGISTIC Procedure
+Response Variable: good_bad
+
+Criterion     Value
+---------  --------
+AIC          67.619
+-2 Log L     45.619
+SC           86.469
+
+            Analysis of Maximum Likelihood Estimates            
+
+Parameter  Estimate  Standard Error  Wald Chi-Square  Pr > ChiSq
+---------  --------  --------------  ---------------  ----------
+Intercept    1.6163          2.8681           0.3176      0.5731
+age         -0.0549          0.0448           1.5033      0.2202
+amount       0.0001          0.0003           0.2397      0.6244
+duration    -0.0665          0.0746           0.7932      0.3731
+checking     0.4696          1.0012           0.2200      0.6390
+checking    -0.0636          1.1142           0.0033      0.9545
+checking    -0.8536          1.2896           0.4382      0.5080
+checking     0.0000          0.0000                .           .
+savings      0.6213          2.2487           0.0763      0.7823
+savings      0.7634          2.3862           0.1024      0.7490
+savings      1.7221          2.3700           0.5280      0.4675
+savings      1.8027          2.7509           0.4294      0.5123
+savings      0.0000          0.0000                .           .
+
+                     Odds Ratio Estimates                     
+
+Effect    Point Estimate  95% Wald CL Lower  95% Wald CL Upper
+--------  --------------  -----------------  -----------------
+checking           1.599              0.225             11.382
+checking           0.938              0.106              8.333
+checking           0.426              0.034              5.333
+savings            1.861              0.023            152.735
+savings            2.146              0.020            230.522
+savings            5.596              0.054            582.425
+savings            6.066              0.028           1331.905
+age                0.947              0.867              1.033
+amount             1.000              1.000              1.001
+duration           0.936              0.808              1.083
+
+                                     
+---------------------------  --------
+Number of Observations Read        41
+Number of Observations Used        41
+
+   Model Information   
+
+                       
+-------------  --------
+Link Function  Probit  
+
+            Response Profile            
+  Probability modeled is good_bad='0'   
+
+Ordered Value  good_bad  Total Frequency
+-------------  --------  ---------------
+            1  0                      17
+            2  1                      24
+
+        Class Level Information        
+
+Class       Levels  Values             
+--------  --------  -------------------
+checking         4  A11 A12 A13 A14    
+savings          5  A61 A62 A63 A64 A65
+
+                                             
+---------------------------------------------
+Convergence criterion (GCONV=1E-8) satisfied.
+
+The LOGISTIC Procedure
+Response Variable: good_bad
+
+Criterion     Value
+---------  --------
+AIC          68.365
+-2 Log L     46.365
+SC           87.214
+
+            Analysis of Maximum Likelihood Estimates            
+
+Parameter  Estimate  Standard Error  Wald Chi-Square  Pr > ChiSq
+---------  --------  --------------  ---------------  ----------
+Intercept    1.7681          1.6216           1.1888      0.2756
+checking     0.4097          0.6197           0.4370      0.5086
+checking     0.1055          0.6924           0.0232      0.8789
+checking    -0.4443          0.7869           0.3188      0.5723
+checking     0.0000          0.0000                .           .
+savings     -0.3953          1.2204           0.1049      0.7460
+savings     -0.3051          1.3188           0.0535      0.8171
+savings      0.4229          1.2973           0.1062      0.7445
+savings      0.1286          1.5291           0.0071      0.9330
+savings      0.0000          0.0000                .           .
+age         -0.0413          0.0270           2.3454      0.1257
+amount       0.0001          0.0002           0.3455      0.5567
+duration    -0.0366          0.0454           0.6508      0.4198
+
+                                     
+---------------------------  --------
+Number of Observations Read        41
+Number of Observations Used        41
+
+         Model Information          
+
+                                    
+-------------  ---------------------
+Link Function  Complementary Log-log
+
+            Response Profile            
+  Probability modeled is good_bad='0'   
+
+Ordered Value  good_bad  Total Frequency
+-------------  --------  ---------------
+            1  0                      17
+            2  1                      24
+
+        Class Level Information        
+
+Class       Levels  Values             
+--------  --------  -------------------
+checking         4  A11 A12 A13 A14    
+savings          5  A61 A62 A63 A64 A65
+
+                                             
+---------------------------------------------
+Convergence criterion (GCONV=1E-8) satisfied.
+
+The LOGISTIC Procedure
+Response Variable: good_bad
+
+Criterion     Value
+---------  --------
+AIC          69.877
+-2 Log L     47.877
+SC           88.726
+
+            Analysis of Maximum Likelihood Estimates            
+
+Parameter  Estimate  Standard Error  Wald Chi-Square  Pr > ChiSq
+---------  --------  --------------  ---------------  ----------
+Intercept    1.7218          2.0102           0.7336      0.3917
+checking     0.6412          0.7526           0.7258      0.3942
+checking     0.2112          0.8399           0.0632      0.8015
+checking    -0.0452          0.9535           0.0023      0.9622
+checking     0.0000          0.0000                .           .
+savings     -0.6670          1.5203           0.1925      0.6608
+savings     -0.3816          1.6206           0.0554      0.8139
+savings      0.2751          1.5922           0.0298      0.8628
+savings      0.3132          1.7626           0.0316      0.8590
+savings      0.0000          0.0000                .           .
+age         -0.0434          0.0342           1.6136      0.2040
+amount       0.0001          0.0002           0.2124      0.6449
+duration    -0.0420          0.0553           0.5771      0.4474
+

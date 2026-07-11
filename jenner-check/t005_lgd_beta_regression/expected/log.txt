@@ -1,0 +1,103 @@
+NOTE: Option OBS changed to 100.
+NOTE: DATA lgddata
+
+NOTE: Processing inline DATALINES (40 lines)
+
+NOTE: Read 40 rows from DATALINES.
+NOTE: Wrote lgddata (40 rows, 14 columns).
+NOTE: DATA elapsed:
+  wall  0.00 seconds
+  cpu   0.00 seconds
+NOTE: PROC UNIVARIATE
+NOTE: DATA training holdout
+
+NOTE: Multi-output DATA step splits stream into: training holdout
+
+NOTE: Read 40 rows from lgddata.
+NOTE: Wrote training (28 rows, 14 columns).
+NOTE: Wrote holdout (12 rows, 14 columns).
+NOTE: DATA elapsed:
+  wall  0.00 seconds
+  cpu   0.00 seconds
+NOTE: PROC REG data=training
+
+NOTE: PROC REG: processed 1 job(s) in batch
+NOTE: ODS plot written: reg_residuals_vs_predicted.spec.json
+NOTE: ODS plot written: reg_residual_histogram_panel.spec.json
+NOTE: ODS plot written: reg_residuals_vs_obs_order.spec.json
+NOTE: ODS plot written: reg_qq_plot.spec.json
+NOTE: ODS plot written: reg_cooksd.spec.json
+NOTE: PROC REG ODS Graphics generated.
+NOTE: OUTEST dataset outests written with 1 observations.
+NOTE: PROC SCORE data=holdout score=outests
+
+NOTE: PROC SCORE created /tmp/work/r_6e15a8cca3694e8387fb45e35d07fe34/work/46143638-e11c-4881-a330-c46639aa102f/preds.avro with 12 observations and 1 score variable(s).
+NOTE: PROC CORR data=preds
+
+NOTE: ODS plot written: corr_heatmap.spec.json
+NOTE: PROC CORR ODS Graphics generated.
+NOTE: DATA MSEtemp
+
+
+NOTE: Read 12 rows from preds.
+NOTE: Wrote MSEtemp (12 rows, 16 columns).
+NOTE: DATA elapsed:
+  wall  0.00 seconds
+  cpu   0.00 seconds
+NOTE: PROC MEANS
+NOTE: PROC MEANS statement used.
+NOTE: PROC MEANS
+NOTE: Output dataset meanstats has 1 observations and 4 variables.
+NOTE: PROC MEANS statement used.
+NOTE: DATA betaparams
+
+
+NOTE: Read 1 rows from meanstats.
+NOTE: Wrote betaparams (1 rows, 6 columns).
+NOTE: DATA elapsed:
+  wall  0.00 seconds
+  cpu   0.00 seconds
+NOTE: DATA transformedtraining
+
+
+NOTE: Read 28 rows from training.
+NOTE: Wrote transformedtraining (28 rows, 21 columns).
+NOTE: DATA elapsed:
+  wall  0.00 seconds
+  cpu   0.00 seconds
+NOTE: PROC UNIVARIATE
+NOTE: PROC REG data=transformedtraining
+
+NOTE: PROC REG: processed 1 job(s) in batch
+NOTE: ODS plot written: reg_residuals_vs_predicted.spec.json
+NOTE: ODS plot written: reg_residual_histogram_panel.spec.json
+NOTE: ODS plot written: reg_residuals_vs_obs_order.spec.json
+NOTE: ODS plot written: reg_qq_plot.spec.json
+NOTE: ODS plot written: reg_cooksd.spec.json
+NOTE: PROC REG ODS Graphics generated.
+NOTE: OUTEST dataset outests2 written with 1 observations.
+NOTE: PROC SCORE data=holdout score=outests2
+
+NOTE: PROC SCORE created /tmp/work/r_6e15a8cca3694e8387fb45e35d07fe34/work/46143638-e11c-4881-a330-c46639aa102f/transpreds.avro with 12 observations and 1 score variable(s).
+NOTE: DATA preds2
+
+
+NOTE: Read 12 rows from transpreds.
+NOTE: Wrote preds2 (12 rows, 22 columns).
+NOTE: DATA elapsed:
+  wall  0.00 seconds
+  cpu   0.00 seconds
+NOTE: PROC CORR data=preds2
+
+NOTE: ODS plot written: corr_heatmap.spec.json
+NOTE: PROC CORR ODS Graphics generated.
+NOTE: DATA MSEtemp2
+
+
+NOTE: Read 12 rows from preds2.
+NOTE: Wrote MSEtemp2 (12 rows, 23 columns).
+NOTE: DATA elapsed:
+  wall  0.00 seconds
+  cpu   0.00 seconds
+NOTE: PROC MEANS
+NOTE: PROC MEANS statement used.
