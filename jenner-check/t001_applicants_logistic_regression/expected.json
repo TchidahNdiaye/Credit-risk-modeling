@@ -1,0 +1,13 @@
+{
+  "_captured_at": "2026-07-11T06:20:00Z",
+  "_captured_run_id": "r_dfdd97bbdab844f392acc57286764106",
+  "status": "ok",
+  "exit_code": 0,
+  "log_contains": [
+    "NOTE: Wrote mydata_applicants (41 rows, 6 columns).",
+    "NOTE: PROC LOGISTIC data=mydata_applicants",
+    "NOTE: PROC LOGISTIC completed. Results written to: ./ods_output/logistic_results.spec.json"
+  ],
+  "log_does_not_contain": ["ERROR:", "[JENNER-ERROR"],
+  "diagnostics": {"parse_warnings": [], "runtime_warnings": []}
+}

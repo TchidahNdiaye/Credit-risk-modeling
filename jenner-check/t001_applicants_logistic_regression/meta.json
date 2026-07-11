@@ -1,0 +1,7 @@
+{
+  "bundle": "t001_applicants_logistic_regression",
+  "source_file": "Classification for credit scoring.sas",
+  "source_blob_sha": "7d7e0e8e5e4f0d67ca132b54c5c3adbfbb3b7887",
+  "source_commit": "3d048ab8299e7b44cadf1e72790934fdff2d5cc8",
+  "notes": "First section of the script: three PROC LOGISTIC variants (default logit, link=probit, link=cloglog) predicting good_bad from age/amount/duration/checking/savings on the German-credit-style 'applicants' data. Original reads libname mydata pointing at the author's local disk; substituted with a 41-row inline DATALINES sample matching the same column shapes (checking/savings as A1x/A6x categorical status codes) so the CLASS/MODEL logic runs unmodified. Sample sized/balanced to avoid quasi-complete separation warnings seen with a smaller draft."
+}

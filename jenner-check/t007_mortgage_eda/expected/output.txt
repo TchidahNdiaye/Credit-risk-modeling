@@ -1,0 +1,187 @@
+PROC CONTENTS
+-------------------------------------------------------------------------------
+
+Data Set Name: mortgage
+Observations:  40
+Variables:     6
+
+Variables (in alphabetical order):
+
+  #  Variable        Type    Len  Format  Label
+---  --------------  ----  -----  ------  -----
+  1  default_time     Num      8          
+  2  fico_orig_time   Num      8          
+  3  gdp_time         Num      8          
+  4  id               Num      8          
+  5  ltv_orig_time    Num      8          
+  6  time             Num      8          
+
+-------------------------------------------------------------------------------
+
+                                        Frequences relative et absolue du defaut                                        
+
+                                                   The FREQ Procedure
+
+                                          Cumulative    Cumulative
+default_time    Frequency    Percent     Frequency      Percent
+---------------------------------------------------------------------
+0                      34     85.00           34        85.00
+1                       6     15.00           40       100.00
+                                        Frequences relative et absolue du defaut                                        
+
+                                                  The MEANS Procedure
+
+ Variable        N   N Miss           Mean        Std Dev        Minimum        Maximum
+ --------------------------------------------------------------------------------------
+ gdp_time       40        0      0.9666000      1.8788140     -2.3730000      3.9530000
+ --------------------------------------------------------------------------------------
+
+                          La fonction de distribution cummulative
+			des variables FICO & LTV                           
+
+                                                The UNIVARIATE Procedure
+                                               Variable:  fico_orig_time
+
+                                                        Moments
+
+N                                 40    Sum Weights                       40
+Mean                      661.177500    Sum Observations        26447.100000
+Std Deviation             104.690745    Variance                10960.152045
+Skewness                    0.049530    Kurtosis                   -1.469666
+Uncorrected SS        17913673.390000    Corrected SS           427445.929750
+Coeff Variation            15.833985    Std Error Mean             16.553060
+
+           Basic Statistical Measures            
+
+Location              Variability                
+--------  ----------  -------------  ------------
+Mean      661.177500  Std Deviation    104.690745
+Median    648.400000  Variance       10960.152045
+Mode      630.200000  Range            290.100000
+
+Quantiles (Definition 5)
+
+Quantile      Estimate
+----------  ----------
+0% Min      518.100000
+1%          518.100000
+5%          520.400000
+10%         525.500000
+25% Q1      549.000000
+50% Median  648.400000
+75% Q3      776.450000
+90%         800.350000
+95%         806.300000
+99%         808.200000
+100% Max    808.200000
+
+           Extreme Observations           
+
+Lowest                Highest             
+--------  ----------  --------  ----------
+Value     518.100000  Value     795.400000
+Value     518.400000  Value     805.300000
+Value     522.400000  Value     805.800000
+Value     522.700000  Value     806.800000
+Value     528.300000  Value     808.200000
+
+
+
+
+         Tests for Location          
+
+Test                Statistic   p Value
+------------------  ---------  --------
+Student's t         39.942916479         0
+Sign                       20  0.000000001
+Signed Rank               820  0.000000036
+
+
+                                                The UNIVARIATE Procedure
+                                                Variable:  ltv_orig_time
+
+                                                        Moments
+
+N                                 40    Sum Weights                       40
+Mean                       62.744250    Sum Observations         2509.770000
+Std Deviation              21.741959    Variance                  472.712794
+Skewness                    0.256595    Kurtosis                   -1.101127
+Uncorrected SS         175909.435300    Corrected SS            18435.798978
+Coeff Variation            34.651716    Std Error Mean              3.437706
+
+          Basic Statistical Measures          
+
+Location             Variability              
+--------  ---------  -------------  ----------
+Mean      62.744250  Std Deviation   21.741959
+Median    62.360000  Variance       472.712794
+Mode              .  Range           72.420000
+
+Quantiles (Definition 5)
+
+Quantile      Estimate
+----------  ----------
+0% Min       31.760000
+1%           31.760000
+5%           33.105000
+10%          35.060000
+25% Q1       42.975000
+50% Median   62.360000
+75% Q3       79.370000
+90%          93.610000
+95%         100.545000
+99%         104.180000
+100% Max    104.180000
+
+          Extreme Observations           
+
+Lowest               Highest             
+--------  ---------  --------  ----------
+Value     31.760000  Value      90.650000
+Value     32.750000  Value      96.570000
+Value     33.460000  Value      99.690000
+Value     34.920000  Value     101.400000
+Value     35.200000  Value     104.180000
+
+
+
+
+         Tests for Location          
+
+Test                Statistic   p Value
+------------------  ---------  --------
+Student's t         18.251781021         0
+Sign                       20  0.000000001
+Signed Rank               820  0.000000036
+
+                                                 Mesures de la location                                                 
+
+                                                  The MEANS Procedure
+
+ Variable              N           Mean         Median           Mode    1st Pctl   99th Pctl
+ --------------------------------------------------------------------------------------------
+ default_time         40         0.1500         0.0000         0.0000      0.0000      1.0000
+ fico_orig_time       40       661.1775       648.4000       630.2000    518.1000    808.2000
+ ltv_orig_time        40        62.7443        62.3600              .     31.7600    104.1800
+ --------------------------------------------------------------------------------------------
+
+                                                Analyse bidimentionnelle                                                
+
+                                                   The FREQ Procedure
+
+Table of default_time by fico_orig_time
+
+default_time |         0 |         1 |         2 |         3 |         4 |      Total
+-------------+-----------+-----------+-----------+-----------+-----------+-----------
+0            |         6 |         5 |         8 |         7 |         8 |         34
+             |     15.00 |     12.50 |     20.00 |     17.50 |     20.00 |      85.00
+             |     17.65 |     14.71 |     23.53 |     20.59 |     23.53 |     100.00
+             |     75.00 |     71.43 |     88.89 |     87.50 |    100.00 |      85.00
+-------------+-----------+-----------+-----------+-----------+-----------+-----------
+1            |         2 |         2 |         1 |         1 |         0 |          6
+             |      5.00 |      5.00 |      2.50 |      2.50 |      0.00 |      15.00
+             |     33.33 |     33.33 |     16.67 |     16.67 |      0.00 |     100.00
+             |     25.00 |     28.57 |     11.11 |     12.50 |      0.00 |      15.00
+-------------+-----------+-----------+-----------+-----------+-----------+-----------
+Total        |         8 |         7 |         9 |         8 |         8 |         40
+

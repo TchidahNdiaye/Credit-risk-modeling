@@ -1,0 +1,7 @@
+{
+  "bundle": "t005_lgd_beta_regression",
+  "source_file": "Applicants data set/Applicants credit risk modeling/Applicants_LGD_Modeling.sas",
+  "source_blob_sha": "b643ba9a13aef40c616f3951db4b9163c9d08ff0",
+  "source_commit": "3d048ab8299e7b44cadf1e72790934fdff2d5cc8",
+  "notes": "Loss-Given-Default modeling via a Beta-distribution transform: OLS regression on raw LGD, then PROBIT(CDF('BETA',...)) transform, a second OLS on the transformed target, and BETAINV(CDF('NORMAL',...)) to invert predictions back to the LGD scale, with PROC CORR/MEANS diagnostics at each stage (the script's first, non-duplicated 8.1 section only -- the file repeats the same steps a second time verbatim further down, which this bundle does not re-run). Original used PROC IMPORT from a hardcoded local .txt path and ODS EXCEL to a local output path; substituted with a 40-row mock sample (LGD in (0,1), 13 ratio predictors, seed=55) matching the exact column names (LGD, ratio1-ratio13) the MODEL statements reference, and rescaled the 337-row training/holdout split boundary to 28/12 (~70/30, same proportions) for the smaller sample. Every PROC (UNIVARIATE, REG, SCORE, CORR, MEANS) and every math function (PROBIT, CDF, BETAINV) ran cleanly end-to-end."
+}

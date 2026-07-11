@@ -1,0 +1,13 @@
+{
+  "_captured_at": "2026-07-11T06:40:00Z",
+  "_captured_run_id": "r_6e15a8cca3694e8387fb45e35d07fe34",
+  "status": "ok",
+  "exit_code": 0,
+  "log_contains": [
+    "NOTE: Wrote lgddata (40 rows, 14 columns).",
+    "NOTE: Wrote training (28 rows, 14 columns).",
+    "NOTE: OUTEST dataset outests2 written with 1 observations."
+  ],
+  "log_does_not_contain": ["ERROR:", "[JENNER-ERROR"],
+  "diagnostics": {"parse_warnings": [], "runtime_warnings": []}
+}

@@ -1,0 +1,7 @@
+{
+  "bundle": "t003_hmeq_classification_tree",
+  "source_file": "Home Equity Loans Classification Tree/HMEQ Classification Tree.sas",
+  "source_blob_sha": "9d5ec100b515343a906fc490e9e78bd3fd9b54fb",
+  "source_commit": "3d048ab8299e7b44cadf1e72790934fdff2d5cc8",
+  "notes": "PROC HPSPLIT decision-tree fit on HMEQ with two of the script's five split criteria (entropy, gini) plus cost-complexity pruning -- kept distinct from t002's stepwise logistic regression to preserve technique diversity. Original used proc import from a hardcoded local CSV path and wrote code/rules files to the author's local disk; substituted with a 50-row sample (25/25 BAD split, seed=7) drawn from the repo's own shipped hmeq.csv, and dropped the partition/code/rules output clauses that target local paths. CONTENTS/MEANS/FREQ preamble kept as authored."
+}

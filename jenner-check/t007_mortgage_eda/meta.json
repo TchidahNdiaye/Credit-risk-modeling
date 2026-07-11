@@ -1,0 +1,7 @@
+{
+  "bundle": "t007_mortgage_eda",
+  "source_file": "Applicants data set/Applicants credit risk modeling/Credit risk - Exploration Data Analysis.sas",
+  "source_blob_sha": "8e513ee050faacbbb64db77c6ca92506c7f47b29",
+  "source_commit": "3d048ab8299e7b44cadf1e72790934fdff2d5cc8",
+  "notes": "French-commented exploratory data analysis of a mortgage default panel: PROC CONTENTS, univariate PROC FREQ/MEANS on default_time/FICO/LTV/GDP, PROC UNIVARIATE with CDFPLOT+HISTOGRAM, and a bidimensional analysis (PROC RANK into FICO quintiles, merged back, cross-tabbed against default_time). Original reads libname mydata pointing at the author's local Windows disk; substituted with a 40-row synthetic mortgage panel (id/time/default_time/fico_orig_time/ltv_orig_time/gdp_time, seed=21) matching the exact columns the script explores. Re-encoded the French titles' accented characters to unaccented ASCII (Frequences/defaut) -- copying the original file's Latin-1 bytes verbatim produced UTF-8 replacement characters in this UTF-8 script.sas. Split the original's two-variable 'cdfplot fico_orig_time ltv_orig_time;' into two single-variable CDFPLOT statements: Jenner's parser rejects a multi-variable CDFPLOT statement (confirmed via a minimal reproducer and a sas-expert BUG verdict; documented SAS syntax allows multiple variables per CDFPLOT -- see the set/ regression test filed for this). Dropped the QQPLOT/skew-kurtosis PROC MEANS block later in the original to keep the bundle focused; kept everything else unmodified."
+}

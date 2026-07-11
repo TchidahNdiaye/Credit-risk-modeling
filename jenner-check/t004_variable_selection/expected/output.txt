@@ -1,0 +1,106 @@
+                                                   The FREQ Procedure
+
+Table of marital by good_bad
+
+marital |         0 |         1 |      Total
+--------+-----------+-----------+-----------
+A91     |         1 |        10 |         11
+        |      2.00 |     20.00 |      22.00
+        |      9.09 |     90.91 |     100.00
+        |      6.25 |     29.41 |      22.00
+--------+-----------+-----------+-----------
+A92     |         4 |         7 |         11
+        |      8.00 |     14.00 |      22.00
+        |     36.36 |     63.64 |     100.00
+        |     25.00 |     20.59 |      22.00
+--------+-----------+-----------+-----------
+A93     |         8 |        11 |         19
+        |     16.00 |     22.00 |      38.00
+        |     42.11 |     57.89 |     100.00
+        |     50.00 |     32.35 |      38.00
+--------+-----------+-----------+-----------
+A94     |         3 |         6 |          9
+        |      6.00 |     12.00 |      18.00
+        |     33.33 |     66.67 |     100.00
+        |     18.75 |     17.65 |      18.00
+--------+-----------+-----------+-----------
+Total   |        16 |        34 |         50
+
+Statistics for Table of marital by good_bad
+
+Statistic                                DF  Value         Prob
+--------------------------------------------------------------
+Chi-Square                                3 3.6483       0.3020
+Likelihood Ratio Chi-Square               3 4.2432       0.2364
+
+Cramer's V                           0.2701
+Contingency Coefficient              0.2608
+
+                                     
+---------------------------  --------
+Number of Observations Read        50
+Number of Observations Used        50
+
+            Response Profile            
+  Probability modeled is good_bad='0'   
+
+Ordered Value  good_bad  Total Frequency
+-------------  --------  ---------------
+            1  0                      16
+            2  1                      34
+
+                                               Class Level Information                                                
+
+Class       Levels  Values                                                                                            
+--------  --------  --------------------------------------------------------------------------------------------------
+checking         4  A11 A12 A13 A14                                                                                   
+history          5  A30 A31 A32 A33 A34                                                                               
+purpose          5  A40 A41 A42 A43 A46                                                                               
+savings          5  A61 A62 A63 A64 A65                                                                               
+age             33  21 22 23 24 25 26 27 30 31 32 33 34 35 36 38 44 45 46 47 48 50 51 52 53 56 58 59 61 62 63 65 69 70
+employed         5  A71 A72 A73 A74 A75                                                                               
+marital          4  A91 A92 A93 A94                                                                                   
+coapp            3  A101 A102 A103                                                                                    
+resident         4  1 2 3 4                                                                                           
+other            3  A141 A142 A143                                                                                    
+housing          3  A151 A152 A153                                                                                    
+property         4  A121 A122 A123 A124                                                                               
+
+                                             
+---------------------------------------------
+Convergence criterion (GCONV=1E-8) satisfied.
+
+The LOGISTIC Procedure
+Response Variable: good_bad
+
+Criterion     Value
+---------  --------
+AIC          63.604
+-2 Log L     59.604
+SC           67.428
+
+            Analysis of Maximum Likelihood Estimates            
+
+Parameter  Estimate  Standard Error  Wald Chi-Square  Pr > ChiSq
+---------  --------  --------------  ---------------  ----------
+Intercept    0.3651          0.7017           0.2706      0.6029
+installp    -0.4737          0.2800           2.8621      0.0907
+
+                     Odds Ratio Estimates                     
+
+Effect    Point Estimate  95% Wald CL Lower  95% Wald CL Upper
+--------  --------------  -----------------  -----------------
+installp           0.623              0.360              1.078
+
+     Summary of Stepwise Selection      
+
+    Step  Effect    Variable  Pr > ChiSq
+--------  --------  --------  ----------
+       1  Entered   installp      0.0907
+
+Variables Selected
+
+Variable
+--------
+installp
+

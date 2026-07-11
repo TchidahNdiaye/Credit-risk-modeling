@@ -1,0 +1,231 @@
+                                                The UNIVARIATE Procedure
+                                                     Variable:  LGD
+
+                                                        Moments
+
+N                                 40    Sum Weights                       40
+Mean                        0.474795    Sum Observations           18.991800
+Std Deviation               0.260368    Variance                    0.067791
+Skewness                    0.313566    Kurtosis                   -1.130551
+Uncorrected SS             11.661078    Corrected SS                2.643866
+Coeff Variation            54.837963    Std Error Mean              0.041168
+
+        Basic Statistical Measures         
+
+Location            Variability            
+--------  --------  -------------  --------
+Mean      0.474795  Std Deviation  0.260368
+Median    0.451950  Variance       0.067791
+Mode             .  Range          0.853700
+
+Quantiles (Definition 5)
+
+Quantile    Estimate
+----------  --------
+0% Min      0.084700
+1%          0.084700
+5%          0.118800
+10%         0.151600
+25% Q1      0.248100
+50% Median  0.451950
+75% Q3      0.678650
+90%         0.881550
+95%         0.919550
+99%         0.938400
+100% Max    0.938400
+
+         Extreme Observations         
+
+Lowest              Highest           
+--------  --------  --------  --------
+Value     0.084700  Value     0.854900
+Value     0.106300  Value     0.908200
+Value     0.131300  Value     0.909300
+Value     0.133300  Value     0.929800
+Value     0.169900  Value     0.938400
+
+
+
+
+         Tests for Location          
+
+Test                Statistic   p Value
+------------------  ---------  --------
+Student's t         11.533169682         0
+Sign                       20  0.000000001
+Signed Rank               820  0.000000036
+
+                                                   The REG Procedure                                                    
+                                                     Model: MODEL1                                                      
+                                                Dependent Variable: LGD                                                 
+
+Source                 DF  Sum of Squares  Mean Square   F Value    Pr > F
+---------------  --------  --------------  -----------  --------  --------
+Model                  13         0.53676      0.04129      0.49    0.8948
+Error                  14         1.17443      0.08389                    
+Corrected Total        27         1.71118                                 
+
+Root MSE           0.28963    R-Square            0.3137
+Dependent Mean       0.47660    Adj R-Sq           -0.3236
+Coeff Var         60.77029
+
+                       Parameter Estimates                       
+
+Variable         DF  Estimate  Standard Error   t Value  Pr > |t|
+---------  --------  --------  --------------  --------  --------
+Intercept         1   0.49231         0.06411      7.68    <.0001
+ratio1            1   0.00059         0.06934      0.01    0.9933
+ratio2            1  -0.03742         0.08064     -0.46    0.6498
+ratio3            1  -0.03098         0.07952     -0.39    0.7027
+ratio4            1  -0.02356         0.06717     -0.35    0.7310
+ratio5            1  -0.06955         0.06448     -1.08    0.2990
+ratio6            1   0.05986         0.06274      0.95    0.3562
+ratio7            1   0.07966         0.08045      0.99    0.3389
+ratio8            1   0.00752         0.06095      0.12    0.9035
+ratio9            1  -0.08157         0.05884     -1.39    0.1874
+ratio10           1  -0.03394         0.05679     -0.60    0.5596
+ratio11           1  -0.07634         0.05883     -1.30    0.2154
+ratio12           1   0.02178         0.05227      0.42    0.6833
+ratio13           1  -0.05405         0.06819     -0.79    0.4413
+
+                    The CORR Procedure
+                         2 Variables:    LGD   LGDOLS
+                    Simple Statistics
+Variable         N      Mean   Std Dev       Sum   Minimum   Maximum
+--------  --------  --------  --------  --------  --------  --------
+LGD             12   0.47057   0.29114   5.64690   0.08470   0.93840
+LGDOLS           0         .         .         .         .         .
+   Pearson Correlation Coefficients, N = 12
+          Prob > |r| under H0: Rho=0
+                 LGD    LGDOLS
+--------  --------  --------
+LGD        1.00000         .
+              .            .
+LGDOLS           .         .
+                 .      .
+                                                  The MEANS Procedure
+
+ Variable        N        Mean     Std Dev     Minimum     Maximum
+ -----------------------------------------------------------------
+ MSEterm         .           .           .           .           .
+ -----------------------------------------------------------------
+
+                                                  The MEANS Procedure
+
+ Variable        N           Mean        Std Dev        Minimum        Maximum
+ -----------------------------------------------------------------------------
+ LGD            28      0.4766036      0.2517481      0.1063000      0.9298000
+ -----------------------------------------------------------------------------
+
+                                                The UNIVARIATE Procedure
+                                                   Variable:  newLGD
+
+                                                        Moments
+
+N                                 28    Sum Weights                       28
+Mean                        0.024080    Sum Observations            0.674239
+Std Deviation               0.941961    Variance                    0.887290
+Skewness                    0.348810    Kurtosis                   -0.627761
+Uncorrected SS             23.973068    Corrected SS               23.956832
+Coeff Variation          3911.803546    Std Error Mean              0.178014
+
+         Basic Statistical Measures         
+
+Location             Variability            
+--------  ---------  -------------  --------
+Mean       0.024080  Std Deviation  0.941961
+Median    -0.036256  Variance       0.887290
+Mode              .  Range          3.408199
+
+Quantiles (Definition 5)
+
+Quantile     Estimate
+----------  ---------
+0% Min      -1.462417
+1%          -1.462417
+5%          -1.306481
+10%         -1.294922
+25% Q1      -0.760758
+50% Median  -0.036256
+75% Q3       0.580768
+90%          1.423227
+95%          1.764677
+99%          1.945783
+100% Max     1.945783
+
+         Extreme Observations          
+
+Lowest               Highest           
+--------  ---------  --------  --------
+Value     -1.462417  Value     1.018595
+Value     -1.306481  Value     1.385800
+Value     -1.294922  Value     1.423227
+Value     -1.101107  Value     1.764677
+Value     -0.850964  Value     1.945783
+
+
+
+
+         Tests for Location          
+
+Test                Statistic   p Value
+------------------  ---------  --------
+Student's t         0.135270152  0.893401714
+Sign                       -1  0.850554019
+Signed Rank               -10  0.909350965
+
+                                                   The REG Procedure                                                    
+                                                     Model: MODEL1                                                      
+                                               Dependent Variable: newLGD                                               
+
+Source                 DF  Sum of Squares  Mean Square   F Value    Pr > F
+---------------  --------  --------------  -----------  --------  --------
+Model                  13         8.04045      0.61850      0.54    0.8595
+Error                  14        15.91638      1.13688                    
+Corrected Total        27        23.95683                                 
+
+Root MSE           1.06625    R-Square            0.3356
+Dependent Mean       0.02408    Adj R-Sq           -0.2813
+Coeff Var       4427.94604
+
+                       Parameter Estimates                       
+
+Variable         DF  Estimate  Standard Error   t Value  Pr > |t|
+---------  --------  --------  --------------  --------  --------
+Intercept         1   0.08621         0.23603      0.37    0.7204
+ratio1            1  -0.00349         0.25528     -0.01    0.9893
+ratio2            1  -0.15382         0.29688     -0.52    0.6125
+ratio3            1  -0.15811         0.29273     -0.54    0.5976
+ratio4            1  -0.08021         0.24729     -0.32    0.7505
+ratio5            1  -0.26350         0.23737     -1.11    0.2857
+ratio6            1   0.21733         0.23096      0.94    0.3627
+ratio7            1   0.30079         0.29616      1.02    0.3270
+ratio8            1   0.03920         0.22438      0.17    0.8638
+ratio9            1  -0.30807         0.21663     -1.42    0.1769
+ratio10           1  -0.12843         0.20906     -0.61    0.5489
+ratio11           1  -0.29444         0.21659     -1.36    0.1955
+ratio12           1   0.06963         0.19241      0.36    0.7229
+ratio13           1  -0.18645         0.25105     -0.74    0.4700
+
+                    The CORR Procedure
+                        2 Variables:    LGD   LGDpred
+                    Simple Statistics
+Variable         N      Mean   Std Dev       Sum   Minimum   Maximum
+--------  --------  --------  --------  --------  --------  --------
+LGD             12   0.47057   0.29114   5.64690   0.08470   0.93840
+LGDpred          0         .         .         .         .         .
+   Pearson Correlation Coefficients, N = 12
+          Prob > |r| under H0: Rho=0
+                 LGD   LGDpred
+--------  --------  --------
+LGD        1.00000         .
+              .            .
+LGDpred          .         .
+                 .      .
+                                                  The MEANS Procedure
+
+ Variable        N        Mean     Std Dev     Minimum     Maximum
+ -----------------------------------------------------------------
+ MSEterm         .           .           .           .           .
+ -----------------------------------------------------------------
+
